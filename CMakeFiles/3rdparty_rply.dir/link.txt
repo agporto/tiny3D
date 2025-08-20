@@ -1,0 +1,2 @@
+/usr/bin/ar qc lib/Release/libTiny3D_3rdparty_rply.a CMakeFiles/3rdparty_rply.dir/3rdparty/rply/rply/rply.c.o
+/usr/bin/ranlib lib/Release/libTiny3D_3rdparty_rply.a

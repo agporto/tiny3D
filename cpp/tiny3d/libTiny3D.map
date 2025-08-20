@@ -1,0 +1,8 @@
+{
+    global:
+        *tiny3d*;
+        extern "C++" {
+             tiny3d::*;
+        };
+    local: *;
+};

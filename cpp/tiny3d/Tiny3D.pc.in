@@ -1,0 +1,10 @@
+prefix=${pcfiledir}/../..
+libdir=${prefix}/lib
+includedir=${prefix}/include/
+
+Name: Tiny3D
+Description: Tiny3D: A Modern Library for 3D Data Processing.
+URL: https://www.tiny3d.org
+Version: 0.0.0
+Cflags: -std=c++17 -isystem${includedir} -isystem${includedir}/tiny3d/3rdparty -D$<JOIN:$<TARGET_PROPERTY:INTERFACE_COMPILE_DEFINITIONS>, -D>
+Libs: -L${libdir} -Wl,-rpath,${libdir} -lTiny3D -ltbb

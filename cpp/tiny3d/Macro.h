@@ -1,0 +1,51 @@
+// ----------------------------------------------------------------------------
+// -                        Tiny3D: www.tiny3d.org                            -
+// ----------------------------------------------------------------------------
+// Copyright (c) 2018-2024 www.tiny3d.org
+// SPDX-License-Identifier: MIT
+// ----------------------------------------------------------------------------
+
+#pragma once
+
+#include <cassert>
+
+// https://gcc.gnu.org/wiki/Visibility updated to use C++11 attribute syntax
+// In Open3D, we set symbol visibility based on folder / cmake target through
+// cmake. e.g. all symbols in kernel folders are hidden. These macros allow fine
+// grained control over symbol visibility.
+#if defined(_WIN32) || defined(__CYGWIN__)
+#define TINY3D_DLL_IMPORT __declspec(dllimport)
+#define TINY3D_DLL_EXPORT __declspec(dllexport)
+#define TINY3D_DLL_LOCAL
+#else
+#define TINY3D_DLL_IMPORT [[gnu::visibility("default")]]
+#define TINY3D_DLL_EXPORT [[gnu::visibility("default")]]
+#define TINY3D_DLL_LOCAL [[gnu::visibility("hidden")]]
+#endif
+
+#ifdef TINY3D_STATIC
+#define TINY3D_API
+#define TINY3D_LOCAL
+#else
+#define TINY3D_LOCAL TINY3D_DLL_LOCAL
+#if defined(TINY3D_ENABLE_DLL_EXPORTS)
+#define TINY3D_API TINY3D_DLL_EXPORT
+#else
+#define TINY3D_API TINY3D_DLL_IMPORT
+#endif
+#endif
+
+// Compiler-specific function macro.
+// Ref: https://stackoverflow.com/a/4384825
+#ifdef _WIN32
+#define TINY3D_FUNCTION __FUNCSIG__
+#else
+#define TINY3D_FUNCTION __PRETTY_FUNCTION__
+#endif
+
+// Assertion for CUDA device code.
+// Usage:
+//     TINY3D_ASSERT(condition);
+//     TINY3D_ASSERT(condition && "Error message");
+// For host-only code, consider using utility::LogError();
+#define TINY3D_ASSERT(...) assert((__VA_ARGS__))

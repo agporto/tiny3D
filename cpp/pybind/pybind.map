@@ -1,0 +1,6 @@
+{
+    global:
+        PyInit_pybind;
+    local:
+        *;
+};

@@ -1,0 +1,27 @@
+// ----------------------------------------------------------------------------
+// -                        Tiny3D: www.tiny3d.org                            -
+// ----------------------------------------------------------------------------
+// Copyright (c) 2018-2024 www.tiny3d.org
+// SPDX-License-Identifier: MIT
+// ----------------------------------------------------------------------------
+
+// clang-format off
+// Tiny3D version
+#define TINY3D_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define TINY3D_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define TINY3D_VERSION_PATCH @PROJECT_VERSION_PATCH@
+#define TINY3D_VERSION_TWEAK @PROJECT_VERSION_TWEAK@
+#define TINY3D_VERSION       "@PROJECT_VERSION@"
+
+// Tiny3D info
+#define TINY3D_HOME          "@PROJECT_HOMEPAGE_URL@"
+#define TINY3D_DOCS          "@PROJECT_DOCS@"
+#define TINY3D_CODE          "@PROJECT_CODE@"
+#define TINY3D_ISSUES        "@PROJECT_ISSUES@"
+
+namespace tiny3d {
+
+    void PrintTiny3DVersion();
+
+}
+// clang-format on

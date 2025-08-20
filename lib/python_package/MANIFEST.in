@@ -1,0 +1,28 @@
+# ----------------------------------------------------------------------------
+# -                        tiny3d: www.tiny3d.org                            -
+# ----------------------------------------------------------------------------
+# Copyright (c) 2018-2024 www.tiny3d.org
+# SPDX-License-Identifier: MIT
+# ----------------------------------------------------------------------------
+
+# Main library, including compiled binaries
+graft tiny3d
+prune **/node_modules
+
+# Misc
+include README.rst
+include LICENSE.txt
+include requirements.txt
+include tiny3d.json
+include setup.cfg
+include setup.py
+include pyproject.toml
+include install.json
+
+# Patterns to exclude from any directory
+global-exclude *~
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude .git
+global-exclude .ipynb_checkpoints
+global-exclude *.map

@@ -1,0 +1,15 @@
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/jsoncpp/lib/pkgconfig/jsoncpp.pc
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/jsoncpp/lib/cmake/jsoncpp/jsoncppConfig.cmake
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/jsoncpp/lib/cmake/jsoncpp/jsoncppConfig-release.cmake
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/jsoncpp/lib/cmake/jsoncpp/jsoncppConfigVersion.cmake
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/jsoncpp/lib/libjsoncpp.a
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/jsoncpp/include/json/allocator.h
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/jsoncpp/include/json/assertions.h
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/jsoncpp/include/json/config.h
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/jsoncpp/include/json/forwards.h
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/jsoncpp/include/json/json.h
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/jsoncpp/include/json/json_features.h
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/jsoncpp/include/json/reader.h
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/jsoncpp/include/json/value.h
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/jsoncpp/include/json/version.h
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/jsoncpp/include/json/writer.h

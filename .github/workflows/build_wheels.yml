@@ -1,0 +1,50 @@
+# This workflow builds Python wheels for Windows, macOS, and Linux using cibuildwheel
+# and uploads them as artifacts. You can also configure it to upload to PyPI.
+
+name: Build Wheels
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install cibuildwheel
+        run: pip install cibuildwheel
+
+      - name: Build wheels
+        run: |
+          cibuildwheel --output-dir wheelhouse
+        env:
+          CIBW_BUILD: "cp3?-*"
+          CIBW_SKIP: "cp36-* cp37-*"
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: wheelhouse/*.whl
+
+# To publish to PyPI, uncomment and configure the following step:
+#      - name: Publish to PyPI
+#        uses: pypa/gh-action-pypi-publish@v1
+#        with:
+#          user: __token__
+#          password: ${{ secrets.PYPI_API_TOKEN }}

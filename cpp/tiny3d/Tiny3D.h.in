@@ -1,0 +1,26 @@
+// ----------------------------------------------------------------------------
+// -                        Tiny3D: www.tiny3d.org                            -
+// ----------------------------------------------------------------------------
+// Copyright (c) 2018-2024 www.tiny3d.org
+// SPDX-License-Identifier: MIT
+// ----------------------------------------------------------------------------
+
+#pragma once
+
+// Note: do not modify Tiny3D.h, modify Tiny3D.h.in instead
+#include "tiny3d/Tiny3DConfig.h"
+#include "tiny3d/geometry/BoundingVolume.h"
+#include "tiny3d/geometry/Geometry.h"
+#include "tiny3d/geometry/KDTreeFlann.h"
+#include "tiny3d/geometry/PointCloud.h"
+#include "tiny3d/geometry/TriangleMesh.h"
+#include "tiny3d/geometry/VoxelGrid.h"
+#include "tiny3d/io/FileFormatIO.h"
+#include "tiny3d/io/ModelIO.h"
+#include "tiny3d/io/PointCloudIO.h"
+#include "tiny3d/io/TriangleMeshIO.h"
+#include "tiny3d/io/VoxelGridIO.h"
+#include "tiny3d/pipelines/registration/Feature.h"
+#include "tiny3d/pipelines/registration/Registration.h"
+#include "tiny3d/pipelines/registration/TransformationEstimation.h"
+

@@ -1,0 +1,9 @@
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/fmt/src/ext_fmt-build/CMakeFiles/fmt.dir
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/fmt/src/ext_fmt-build/CMakeFiles/package.dir
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/fmt/src/ext_fmt-build/CMakeFiles/package_source.dir
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/fmt/src/ext_fmt-build/CMakeFiles/edit_cache.dir
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/fmt/src/ext_fmt-build/CMakeFiles/rebuild_cache.dir
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/fmt/src/ext_fmt-build/CMakeFiles/list_install_components.dir
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/fmt/src/ext_fmt-build/CMakeFiles/install.dir
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/fmt/src/ext_fmt-build/CMakeFiles/install/local.dir
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/fmt/src/ext_fmt-build/CMakeFiles/install/strip.dir

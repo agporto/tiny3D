@@ -1,0 +1,11 @@
+prefix=/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/fmt
+exec_prefix=/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/fmt
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: fmt
+Description: A modern formatting library
+Version: 10.2.1
+Libs: -L${libdir} -lfmt
+Cflags: -I${includedir}
+

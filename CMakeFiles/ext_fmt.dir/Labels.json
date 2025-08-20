@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/CMakeFiles/ext_fmt"
+		},
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/CMakeFiles/ext_fmt.rule"
+		},
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/CMakeFiles/ext_fmt-complete.rule"
+		},
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/fmt/src/ext_fmt-stamp/ext_fmt-build.rule"
+		},
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/fmt/src/ext_fmt-stamp/ext_fmt-configure.rule"
+		},
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/fmt/src/ext_fmt-stamp/ext_fmt-download.rule"
+		},
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/fmt/src/ext_fmt-stamp/ext_fmt-install.rule"
+		},
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/fmt/src/ext_fmt-stamp/ext_fmt-mkdir.rule"
+		},
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/fmt/src/ext_fmt-stamp/ext_fmt-patch.rule"
+		},
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/fmt/src/ext_fmt-stamp/ext_fmt-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"ext_fmt"
+		],
+		"name" : "ext_fmt"
+	}
+}

@@ -1,0 +1,6 @@
+_build_config = {
+    "BUILD_SHARED_LIBS" : $<IF:$<BOOL:@BUILD_SHARED_LIBS@>,True,False>,
+    "GLIBCXX_USE_CXX11_ABI" : $<IF:$<BOOL:@GLIBCXX_USE_CXX11_ABI@>,True,False>,
+    "CMAKE_BUILD_TYPE" : "$<CONFIG>",
+    "WITH_OPENMP" : $<IF:$<BOOL:@WITH_OPENMP@>,True,False>
+}

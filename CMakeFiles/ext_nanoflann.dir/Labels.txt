@@ -1,0 +1,13 @@
+# Target labels
+ ext_nanoflann
+# Source files and their labels
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/CMakeFiles/ext_nanoflann
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/CMakeFiles/ext_nanoflann.rule
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/CMakeFiles/ext_nanoflann-complete.rule
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/nanoflann/src/ext_nanoflann-stamp/ext_nanoflann-build.rule
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/nanoflann/src/ext_nanoflann-stamp/ext_nanoflann-configure.rule
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/nanoflann/src/ext_nanoflann-stamp/ext_nanoflann-download.rule
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/nanoflann/src/ext_nanoflann-stamp/ext_nanoflann-install.rule
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/nanoflann/src/ext_nanoflann-stamp/ext_nanoflann-mkdir.rule
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/nanoflann/src/ext_nanoflann-stamp/ext_nanoflann-patch.rule
+/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/nanoflann/src/ext_nanoflann-stamp/ext_nanoflann-update.rule

@@ -1,0 +1,5 @@
+{
+  "load_extensions": {
+    "tiny3d/extension": true
+  }
+}

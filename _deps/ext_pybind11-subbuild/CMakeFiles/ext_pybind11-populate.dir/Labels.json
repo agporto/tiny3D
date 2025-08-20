@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/_deps/ext_pybind11-subbuild/CMakeFiles/ext_pybind11-populate"
+		},
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/_deps/ext_pybind11-subbuild/CMakeFiles/ext_pybind11-populate.rule"
+		},
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/_deps/ext_pybind11-subbuild/CMakeFiles/ext_pybind11-populate-complete.rule"
+		},
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/_deps/ext_pybind11-subbuild/pybind11/src/ext_pybind11-populate-stamp/ext_pybind11-populate-build.rule"
+		},
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/_deps/ext_pybind11-subbuild/pybind11/src/ext_pybind11-populate-stamp/ext_pybind11-populate-configure.rule"
+		},
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/_deps/ext_pybind11-subbuild/pybind11/src/ext_pybind11-populate-stamp/ext_pybind11-populate-download.rule"
+		},
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/_deps/ext_pybind11-subbuild/pybind11/src/ext_pybind11-populate-stamp/ext_pybind11-populate-install.rule"
+		},
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/_deps/ext_pybind11-subbuild/pybind11/src/ext_pybind11-populate-stamp/ext_pybind11-populate-mkdir.rule"
+		},
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/_deps/ext_pybind11-subbuild/pybind11/src/ext_pybind11-populate-stamp/ext_pybind11-populate-patch.rule"
+		},
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/_deps/ext_pybind11-subbuild/pybind11/src/ext_pybind11-populate-stamp/ext_pybind11-populate-test.rule"
+		},
+		{
+			"file" : "/home/arthur.porto/UFL Dropbox/Arthur Porto/Year_2025/fastmorph/tiny3D/_deps/ext_pybind11-subbuild/pybind11/src/ext_pybind11-populate-stamp/ext_pybind11-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"ext_pybind11-populate"
+		],
+		"name" : "ext_pybind11-populate"
+	}
+}
