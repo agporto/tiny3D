@@ -1,7 +1,7 @@
 # This workflow builds Python wheels for Windows, macOS, and Linux using cibuildwheel
 # and uploads them as artifacts. You can also configure it to upload to PyPI.
 
-name: Build Wheels
+name: Build tiny3D Wheels
 
 on:
   push:
@@ -12,7 +12,7 @@ on:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+  name: Build tiny3D wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -31,7 +31,10 @@ jobs:
 
       - name: Build wheels
         run: |
-          cibuildwheel --output-dir wheelhouse
+          # Project packaging files live in the python/ subdirectory.
+          # Invoke cibuildwheel with explicit project directory.
+          mkdir -p wheelhouse
+          cibuildwheel python --output-dir wheelhouse
         env:
           CIBW_BUILD: "cp3?-*"
           CIBW_SKIP: "cp36-* cp37-*"
