@@ -47,7 +47,7 @@ jobs:
           mkdir -p wheelhouse
           cp build/lib/python_package/pip_package/*.whl wheelhouse/
 
-    - name: Test wheel (import tiny3d)
+      - name: Test wheel (import tiny3d)
         shell: bash
         run: |
           set -euo pipefail
@@ -57,21 +57,9 @@ jobs:
           else
             . venv/bin/activate
           fi
-      python -m pip install --upgrade pip
-      python -m pip install wheelhouse/tiny3d*-*.whl
-      python - <<'PY'
-import tiny3d, sys, platform
-print('tiny3d imported, version:', getattr(tiny3d,'__version__','unknown'))
-print('Python:', sys.version)
-print('Platform:', platform.platform())
-print('Native bindings present:', getattr(tiny3d,'_HAVE_NATIVE', False))
-try:
-  import tiny3d.cpu.pybind as m
-  print('Loaded native module:', m)
-except Exception as e:
-  print('Failed to load native module:', e)
-  raise
-PY
+          python -m pip install --upgrade pip
+          python -m pip install wheelhouse/tiny3d*-*.whl
+          python -c "import tiny3d, sys, platform; print('tiny3d imported, version:', getattr(tiny3d,'__version__','unknown')); print('Python:', sys.version); print('Platform:', platform.platform()); print('Native bindings present:', getattr(tiny3d,'_HAVE_NATIVE', False)); import tiny3d.cpu.pybind as m; print('Loaded native module:', m)"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
