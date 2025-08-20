@@ -18,14 +18,12 @@
 apply.  If you're unsure about any of these, don't hesitate to ask. We're here
 to help! -->
 
--   [ ] I have run `python util/check_style.py --apply` to apply Open3D **code style**
-    to my code.
 -   [ ] This PR changes Open3D behavior or adds new functionality.
-    -   [ ] Both C++ (Doxygen) and Python (Sphinx / Google style) **documentation** is
-        updated accordingly.
-    -   [ ] I have added or updated C++ and / or Python **unit tests** OR included **test
-        results** (e.g. screenshots or numbers) here.
--   [ ] I will follow up and update the code if CI fails.
+- [ ] Both C++ (Doxygen) and Python (Sphinx / Google style) **documentation** is
+    updated accordingly.
+- [ ] I have added or updated C++ and / or Python **unit tests** OR included **test
+    results** (e.g. screenshots or numbers) here.
+- [ ] I will follow up and update the code if CI fails.
     <!-- In case I am unavailable later -->
 -   [ ] For fork PRs, I have selected **Allow edits from maintainers**.
 

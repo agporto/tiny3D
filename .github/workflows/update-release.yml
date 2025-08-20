@@ -19,7 +19,11 @@ jobs:
         run: |
           # Total assets from each main branch commmit:
           # Python wheels (4x4) + Viewer (3) + C++ libs (4+2+2) = 27,
-          release_assets=($(gh release view main-devel --json assets --jq '.assets[] | .name'))
+      if ! gh release view main-devel >/dev/null 2>&1; then
+        echo "main-devel release not found; skipping cleanup."
+        exit 0
+      fi
+      release_assets=($(gh release view main-devel --json assets --jq '.assets[] | .name'))
           last_shas=($(git log --pretty=format:%h --abbrev-commit -n 3))
           echo "Removing release assets except from last 3 commits: ${last_shas[@]}"
           for relass in "${release_assets[@]}"; do

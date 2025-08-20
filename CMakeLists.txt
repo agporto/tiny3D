@@ -311,41 +311,7 @@ add_subdirectory(cpp)
 install(EXPORT ${PROJECT_NAME}Targets NAMESPACE ${PROJECT_NAME}:: DESTINATION ${Tiny3D_INSTALL_CMAKE_DIR})
 export(EXPORT ${PROJECT_NAME}Targets NAMESPACE ${PROJECT_NAME}::)
 
-if (Python3_EXECUTABLE)
-    # `make check-style` checks style for c++/cuda/python/ipynb files
-    add_custom_target(check-style
-        COMMAND ${Python3_EXECUTABLE}
-        ${CMAKE_CURRENT_SOURCE_DIR}/util/check_style.py
-        COMMENT "Python executable used for style check: ${Python3_EXECUTABLE}."
-    )
-
-    # `make apply-style` applies style for c++/cuda/python/ipynb files
-    add_custom_target(apply-style
-        COMMAND ${Python3_EXECUTABLE}
-        ${CMAKE_CURRENT_SOURCE_DIR}/util/check_style.py --apply
-        COMMENT "Python executable used for style check: ${Python3_EXECUTABLE}."
-    )
-endif()
-
 include(Tiny3DPackaging)
-
-# `make check-cpp-style` checks style for c++/cuda files.
-# This works outside of python virtualenv.
-add_custom_target(check-cpp-style
-    COMMAND ${CMAKE_COMMAND}
-    -DPROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
-    -DAPPLY=OFF
-    -P ${CMAKE_CURRENT_SOURCE_DIR}/util/check_cpp_style.cmake
-)
-
-# `make apply-cpp-style` applies style for c++/cuda files.
-# This works outside of python virtualenv.
-add_custom_target(apply-cpp-style
-    COMMAND ${CMAKE_COMMAND}
-    -DPROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
-    -DAPPLY=ON
-    -P ${CMAKE_CURRENT_SOURCE_DIR}/util/check_cpp_style.cmake
-)
 
 include(Tiny3DPrintConfigurationSummary)
 tiny3d_print_configuration_summary()
