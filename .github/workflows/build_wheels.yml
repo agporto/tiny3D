@@ -12,7 +12,7 @@ on:
 
 jobs:
   build_wheels:
-  name: Build tiny3D wheels on ${{ matrix.os }}
+    name: Build tiny3D wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
