@@ -46,13 +46,7 @@ jobs:
           fi
           python -m pip install --upgrade pip
           python -m pip install wheelhouse/tiny3d*-py3-none-any.whl
-          python - <<'PY'
-import tiny3d, sys, platform
-print('tiny3d imported, version:', getattr(tiny3d, '__version__', 'unknown'))
-print('Python:', sys.version)
-print('Platform:', platform.platform())
-print('Native bindings present:', getattr(tiny3d, '_HAVE_NATIVE', False))
-PY
+          python -c "import tiny3d, sys, platform; print('tiny3d imported, version:', getattr(tiny3d,'__version__','unknown')); print('Python:', sys.version); print('Platform:', platform.platform()); print('Native bindings present:', getattr(tiny3d,'_HAVE_NATIVE', False))"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
