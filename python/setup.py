@@ -7,11 +7,8 @@
 
 import os
 import sys
-import platform
-import ctypes
 from setuptools import setup, find_packages
 from setuptools.command.install import install as _install
-from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
 data_files_spec = [
     ("share/jupyter/nbextensions/tiny3d", "tiny3d/nbextension", "*.*"),
@@ -22,25 +19,12 @@ data_files_spec = [
 
 cmdclass = {}
 
-# Force platform specific wheel.
-class bdist_wheel(_bdist_wheel):
-    def finalize_options(self):
-        _bdist_wheel.finalize_options(self)
-        self.root_is_pure = False
-    def get_tag(self):
-        python, abi, plat = _bdist_wheel.get_tag(self)
-        if plat[:5] == "linux":
-            plat = "manylinux2014_x86_64" if platform.machine() == "x86_64" else plat
-        elif plat[:6] == "macosx":
-            plat = plat.replace("universal2", platform.machine())
-        return python, abi, plat
-cmdclass["bdist_wheel"] = bdist_wheel
-
-class install(_install):
-    def finalize_options(self):
+# Keep install class in case future native extensions are added.
+class install(_install):  # noqa: D401
+    def finalize_options(self):  # type: ignore[override]
         _install.finalize_options(self)
-        self.install_libbase = self.install_platlib
-        self.install_lib = self.install_platlib
+        # For pure python, leave root_is_pure True; if native code is added later,
+        # reintroduce a custom bdist_wheel or switch to scikit-build-core.
 cmdclass["install"] = install
 
 with open("requirements.txt", "r") as f:

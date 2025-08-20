@@ -24,7 +24,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
       - name: Install cibuildwheel
         run: pip install cibuildwheel
@@ -38,6 +38,16 @@ jobs:
         env:
           CIBW_BUILD: "cp3?-*"
           CIBW_SKIP: "cp36-* cp37-*"
+          # No native extensions yet; ensure pure wheels stay pure (auditwheel skipped automatically)
+          CIBW_ENVIRONMENT: "PURE_PYTHON=1"
+
+      - name: Test wheel (import tiny3d)
+        run: |
+          python -m venv venv
+          source venv/bin/activate || . venv/Scripts/activate
+          pip install --upgrade pip
+          pip install wheelhouse/tiny3d*.whl
+          python -c "import tiny3d, sys; print('tiny3d imported, version:', getattr(tiny3d, '__version__', 'unknown')); print('Python', sys.version)"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
