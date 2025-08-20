@@ -1,5 +1,5 @@
-# This workflow builds Python wheels for Windows, macOS, and Linux using cibuildwheel
-# and uploads them as artifacts. You can also configure it to upload to PyPI.
+# Build pure-Python wheels for Windows, macOS, and Linux and upload as artifacts.
+# (No native extensions yet; adjust when adding compiled code.)
 
 name: Build tiny3D Wheels (pure Python)
 
@@ -44,16 +44,15 @@ jobs:
           else
             . venv/bin/activate
           fi
-            
           python -m pip install --upgrade pip
           python -m pip install wheelhouse/tiny3d*-py3-none-any.whl
-          python - <<'EOF'
+          python - <<'PY'
 import tiny3d, sys, platform
 print('tiny3d imported, version:', getattr(tiny3d, '__version__', 'unknown'))
 print('Python:', sys.version)
 print('Platform:', platform.platform())
 print('Native bindings present:', getattr(tiny3d, '_HAVE_NATIVE', False))
-EOF
+PY
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
