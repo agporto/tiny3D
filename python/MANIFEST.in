@@ -9,6 +9,9 @@
 graft tiny3d
 prune **/node_modules
 
+# Exclude template/input files
+global-exclude *.in
+
 # Misc
 include README.rst
 include LICENSE.txt

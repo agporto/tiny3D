@@ -15,7 +15,11 @@ from ctypes import CDLL
 from ctypes.util import find_library
 from pathlib import Path
 import warnings
-from tiny3d._build_config import _build_config
+# Attempt to load build configuration (may not exist for pure-python wheels)
+try:
+    from tiny3d._build_config import _build_config  # type: ignore
+except Exception:  # noqa: BLE001
+    _build_config = {"version": "0.0.0", "build_type": "pure-python"}
 
 if sys.platform == "win32":
     _win32_dll_dir = os.add_dll_directory(str(Path(__file__).parent))
@@ -42,7 +46,7 @@ def _insert_pybind_names(skip_names=()):
                 submodules[subname] = sys.modules[modname]
     sys.modules.update(submodules)
 
-__version__ = "0.0.0"
+__version__ = _build_config.get("version", "0.0.0")
 
 if int(sys.version_info[0]) < 3:
     raise Exception("tiny3d only supports Python 3.")
