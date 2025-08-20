@@ -96,7 +96,6 @@ setup_args = dict(
     description="Tiny3D: A Modern Library for 3D Data Processing.",
     long_description=long_description,
     long_description_content_type="text/x-rst",
-    provides_dist=["tiny3d"],
 )
 
 setup(**setup_args)
