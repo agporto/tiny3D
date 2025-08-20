@@ -1,7 +1,7 @@
 # Build pure-Python wheels for Windows, macOS, and Linux and upload as artifacts.
 # (No native extensions yet; adjust when adding compiled code.)
 
-name: Build tiny3D Wheels (pure Python)
+name: Build tiny3D Wheels (with native core)
 
 on:
   push:
@@ -26,15 +26,28 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install build backend
-        run: pip install --upgrade build
-
-      - name: Build wheel
+      - name: Install build tooling
         run: |
-          cd python
-          python -m build --wheel --outdir ../wheelhouse
+          pip install --upgrade pip
+          pip install build wheel
+          pip install cmake ninja
 
-      - name: Test wheel (import tiny3d)
+      - name: Configure & build (C++)
+        run: |
+          cmake -S . -B build -DBUILD_PYTHON_MODULE=ON -GNinja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --target pybind
+
+      - name: Create python package (CMake python-package target)
+        run: |
+          cmake --build build --target python-package
+
+      - name: Build wheel via pip-package target
+        run: |
+          cmake --build build --target pip-package
+          mkdir -p wheelhouse
+          cp build/lib/python_package/pip_package/*.whl wheelhouse/
+
+    - name: Test wheel (import tiny3d)
         shell: bash
         run: |
           set -euo pipefail
@@ -44,9 +57,21 @@ jobs:
           else
             . venv/bin/activate
           fi
-          python -m pip install --upgrade pip
-          python -m pip install wheelhouse/tiny3d*-py3-none-any.whl
-          python -c "import tiny3d, sys, platform; print('tiny3d imported, version:', getattr(tiny3d,'__version__','unknown')); print('Python:', sys.version); print('Platform:', platform.platform()); print('Native bindings present:', getattr(tiny3d,'_HAVE_NATIVE', False))"
+      python -m pip install --upgrade pip
+      python -m pip install wheelhouse/tiny3d*-*.whl
+      python - <<'PY'
+import tiny3d, sys, platform
+print('tiny3d imported, version:', getattr(tiny3d,'__version__','unknown'))
+print('Python:', sys.version)
+print('Platform:', platform.platform())
+print('Native bindings present:', getattr(tiny3d,'_HAVE_NATIVE', False))
+try:
+  import tiny3d.cpu.pybind as m
+  print('Loaded native module:', m)
+except Exception as e:
+  print('Failed to load native module:', e)
+  raise
+PY
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
