@@ -1,7 +1,7 @@
 # This workflow builds Python wheels for Windows, macOS, and Linux using cibuildwheel
 # and uploads them as artifacts. You can also configure it to upload to PyPI.
 
-name: Build tiny3D Wheels
+name: Build tiny3D Wheels (pure Python)
 
 on:
   push:
@@ -26,27 +26,20 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install cibuildwheel
-        run: pip install cibuildwheel
+      - name: Install build backend
+        run: pip install --upgrade build
 
-      - name: Build wheels
+      - name: Build wheel
         run: |
-          # Project packaging files live in the python/ subdirectory.
-          # Invoke cibuildwheel with explicit project directory.
-          mkdir -p wheelhouse
-          cibuildwheel python --output-dir wheelhouse
-        env:
-          CIBW_BUILD: "cp3?-*"
-          CIBW_SKIP: "cp36-* cp37-*"
-          # No native extensions yet; ensure pure wheels stay pure (auditwheel skipped automatically)
-          CIBW_ENVIRONMENT: "PURE_PYTHON=1"
+          cd python
+          python -m build --wheel --outdir ../wheelhouse
 
       - name: Test wheel (import tiny3d)
         run: |
           python -m venv venv
           source venv/bin/activate || . venv/Scripts/activate
           pip install --upgrade pip
-          pip install wheelhouse/tiny3d*.whl
+          pip install wheelhouse/tiny3d*-py3-none-any.whl
           python -c "import tiny3d, sys; print('tiny3d imported, version:', getattr(tiny3d, '__version__', 'unknown')); print('Python', sys.version)"
 
       - name: Upload wheels
