@@ -39,7 +39,7 @@ jobs:
           CIBW_ARCHS_MACOS: "x86_64 arm64"
           CIBW_MANYLINUX_X86_64_IMAGE: "manylinux_2_28"
           CIBW_BEFORE_BUILD_LINUX: >
-            dnf install -y --nogpgcheck cmake ninja-build gcc-c++ &&
+            dnf install -y --nogpgcheck cmake ninja-build gcc-c++ python3-devel &&
             pip install cmake ninja &&
             rm -f /project/CMakeCache.txt /project/cmake_install.cmake
           CIBW_BEFORE_BUILD_WINDOWS: >
