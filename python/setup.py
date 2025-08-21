@@ -39,6 +39,7 @@ class CMakeBuild(build_ext):
 
         # Set Python_EXECUTABLE instead of PYTHON_EXECUTABLE to help CMake find the right Python
         import sysconfig
+        import os
         python_include = sysconfig.get_path('include')
         python_library = sysconfig.get_config_var('LIBDIR')
         
@@ -66,7 +67,6 @@ class CMakeBuild(build_ext):
             f"{python_library}/libpython{python_version}m.a",
         ]
         
-        import os
         for lib_path in possible_libs:
             if lib_path and os.path.exists(lib_path):
                 cmake_args.append(f"-DPython3_LIBRARIES={lib_path}")
