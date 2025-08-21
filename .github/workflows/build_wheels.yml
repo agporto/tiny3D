@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python (match wheel matrix: temporarily cp39 only)
+  - name: "Set up Python (match wheel matrix: temporarily cp39 only)"
         uses: actions/setup-python@v5
         with:
           python-version: '3.9'
