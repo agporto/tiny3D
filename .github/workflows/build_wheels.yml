@@ -45,8 +45,7 @@ jobs:
           CIBW_BEFORE_BUILD_MACOS: >
             pip install cmake ninja
           CIBW_BUILD_VERBOSITY: 1
-          # Point to the python package subdirectory
-          CIBW_BUILD_FRONTEND: "build[uv]"
+          CIBW_BUILD_FRONTEND: "build"
 
       - name: Test wheel install
         run: |
