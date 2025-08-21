@@ -24,7 +24,9 @@ class CMakeExtension(Extension):
 
 class CMakeBuild(build_ext):
     def build_extension(self, ext):
-        extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
+        # Some tooling might pass just the extension name string instead of an Extension object.
+        ext_name = getattr(ext, 'name', ext)
+        extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext_name)))
         
         # required for auto-detection & inclusion of auxiliary "native" libs
         if not extdir.endswith(os.path.sep):
@@ -86,7 +88,7 @@ class CMakeBuild(build_ext):
             if hasattr(self, "parallel") and self.parallel:
                 build_args += [f"-j{self.parallel}"]
 
-        build_temp = Path(self.build_temp) / ext.name
+        build_temp = Path(self.build_temp) / ext_name
         if not build_temp.exists():
             build_temp.mkdir(parents=True)
         
@@ -133,7 +135,10 @@ class CMakeBuild(build_ext):
         built_candidates.sort(key=lambda p: len(p.name), reverse=True)
         selected = built_candidates[0]
         # Expected final path from setuptools (full path to extension)
-        expected_fullpath = Path(self.get_ext_fullpath(ext.name))
+        expected_fullpath = Path(self.get_ext_fullpath(ext_name))
+        if os.environ.get("TINY3D_VERBOSE"):
+            print("[tiny3d] Selected built module:", selected)
+            print("[tiny3d] Copying to:", expected_fullpath)
         expected_fullpath.parent.mkdir(parents=True, exist_ok=True)
         import shutil
         shutil.copy2(selected, expected_fullpath)
