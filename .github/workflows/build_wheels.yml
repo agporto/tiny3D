@@ -37,8 +37,9 @@ jobs:
           CIBW_ARCHS_LINUX: "x86_64"
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_ARCHS_MACOS: "x86_64 arm64"
+          CIBW_MANYLINUX_X86_64_IMAGE: "manylinux_2_28"
           CIBW_BEFORE_BUILD_LINUX: >
-            yum install -y cmake ninja-build &&
+            dnf install -y cmake ninja-build gcc-c++ &&
             pip install cmake ninja
           CIBW_BEFORE_BUILD_WINDOWS: >
             pip install cmake ninja
