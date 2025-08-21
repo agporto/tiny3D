@@ -15,14 +15,12 @@
 #include <sstream>
 #ifdef WIN32
 #include <direct.h>
-#include <dirent/dirent.h>
 #include <io.h>
 #include <windows.h>
 #ifndef PATH_MAX
 #define PATH_MAX MAX_PATH
 #endif
 #else
-#include <dirent.h>
 #include <limits.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -294,30 +292,23 @@ bool RemoveFile(const std::string &filename) {
 bool ListDirectory(const std::string &directory,
                    std::vector<std::string> &subdirs,
                    std::vector<std::string> &filenames) {
-    if (directory.empty()) {
-        return false;
-    }
-    DIR *dir;
-    struct dirent *ent;
-    struct stat st;
-    dir = opendir(directory.c_str());
-    if (!dir) {
-        return false;
-    }
+    if (directory.empty()) return false;
+    subdirs.clear();
     filenames.clear();
-    while ((ent = readdir(dir)) != NULL) {
-        const std::string file_name = ent->d_name;
-        if (file_name[0] == '.') continue;
-        std::string full_file_name =
-                GetRegularizedDirectoryName(directory) + file_name;
-        if (stat(full_file_name.c_str(), &st) == -1) continue;
-        if (S_ISDIR(st.st_mode))
-            subdirs.push_back(full_file_name);
-        else if (S_ISREG(st.st_mode))
-            filenames.push_back(full_file_name);
+    std::error_code ec;
+    for (auto it = fs::directory_iterator(directory, ec); !ec && it != fs::directory_iterator(); ++it) {
+        const auto &p = it->path();
+        std::string name = p.filename().string();
+        if (name.empty() || name[0] == '.') continue; // skip hidden / dot entries
+        std::string full = p.string();
+        std::error_code status_ec;
+        if (it->is_directory(status_ec)) {
+            subdirs.push_back(full);
+        } else if (it->is_regular_file(status_ec)) {
+            filenames.push_back(full);
+        }
     }
-    closedir(dir);
-    return true;
+    return !ec;
 }
 
 bool ListFilesInDirectory(const std::string &directory,
