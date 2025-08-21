@@ -52,7 +52,7 @@ jobs:
       - name: Test wheel install
         run: |
           python -m pip install --find-links wheelhouse tiny3d
-          python -c "import tiny3d; print('tiny3d version:', tiny3d.__version__); print('Native support:', tiny3d._HAVE_NATIVE)"
+          python -c "import tiny3d; print('tiny3d version:', tiny3d.__version__); print('Native support:', getattr(tiny3d, '_HAVE_NATIVE', 'undefined'))"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
