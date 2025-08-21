@@ -38,15 +38,39 @@ class CMakeBuild(build_ext):
         cmake_generator = os.environ.get("CMAKE_GENERATOR", "")
 
         # Set Python_EXECUTABLE instead of PYTHON_EXECUTABLE to help CMake find the right Python
+        import sysconfig
+        python_include = sysconfig.get_path('include')
+        python_library = sysconfig.get_config_var('LIBDIR')
+        
         cmake_args = [
             f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={extdir}",
             f"-DPYTHON_EXECUTABLE={sys.executable}",
             f"-DPython3_EXECUTABLE={sys.executable}",
+            f"-DPython3_INCLUDE_DIRS={python_include}",
             f"-DCMAKE_BUILD_TYPE={cfg}",
             f"-DBUILD_PYTHON_MODULE=ON",
             f"-DBUILD_UNIT_TESTS=OFF",
             f"-DBUILD_BENCHMARKS=OFF",
         ]
+        
+        # Try to find Python library file
+        if python_library:
+            cmake_args.append(f"-DPython3_LIBRARY_DIRS={python_library}")
+            
+        # For manylinux, also try to find the specific library file
+        python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+        possible_libs = [
+            f"{python_library}/libpython{python_version}.so",
+            f"{python_library}/libpython{python_version}m.so",
+            f"{python_library}/libpython{python_version}.a",
+            f"{python_library}/libpython{python_version}m.a",
+        ]
+        
+        import os
+        for lib_path in possible_libs:
+            if lib_path and os.path.exists(lib_path):
+                cmake_args.append(f"-DPython3_LIBRARIES={lib_path}")
+                break
         build_args = []
         
         if "CMAKE_ARGS" in os.environ:
