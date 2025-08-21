@@ -37,38 +37,33 @@ class CMakeBuild(build_ext):
         # Can be set with Conda-Build, for example.
         cmake_generator = os.environ.get("CMAKE_GENERATOR", "")
 
-        # Set Python_EXECUTABLE instead of PYTHON_EXECUTABLE to help CMake find the right Python
+        # Minimal CMake arguments; let CMake/pybind11 discover Python details to avoid partial state.
         import sysconfig
-        python_include = sysconfig.get_path('include')
-        python_library = sysconfig.get_config_var('LIBDIR')
-
+        python_prefix = sysconfig.get_config_var('prefix') or sys.prefix
+        python_libdir = sysconfig.get_config_var('LIBDIR') or ''
         cmake_args = [
             f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={extdir}",
-            f"-DPYTHON_EXECUTABLE={sys.executable}",
             f"-DPython3_EXECUTABLE={sys.executable}",
-            f"-DPython3_INCLUDE_DIRS={python_include}",
+            f"-DPYTHON_EXECUTABLE={sys.executable}",  # backward compat for some 3rdparty scripts
             f"-DCMAKE_BUILD_TYPE={cfg}",
             f"-DBUILD_PYTHON_MODULE=ON",
             f"-DBUILD_UNIT_TESTS=OFF",
             f"-DBUILD_BENCHMARKS=OFF",
+            "-DSKIP_CONFIGURE_SETUP_PY=ON",
         ]
-        
-        # Try to find Python library file
-        if python_library:
-            cmake_args.append(f"-DPython3_LIBRARY_DIRS={python_library}")
-            
-        # For manylinux, also try to find the specific library file
+        # Hint root (helps if multiple versions present)
+        if python_prefix:
+            cmake_args.append(f"-DPython3_ROOT_DIR={python_prefix}")
+        # Attempt to locate an explicit libpython; only add if it exists to avoid confusing FindPython3
         python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
-        possible_libs = [
-            f"{python_library}/libpython{python_version}.so",
-            f"{python_library}/libpython{python_version}m.so",
-            f"{python_library}/libpython{python_version}.a",
-            f"{python_library}/libpython{python_version}m.a",
-        ]
-        
-        for lib_path in possible_libs:
-            if lib_path and os.path.exists(lib_path):
-                cmake_args.append(f"-DPython3_LIBRARIES={lib_path}")
+        candidate_libs = []
+        if python_libdir:
+            for stem in ("", "m"):
+                for ext in (".so", ".a"):
+                    candidate_libs.append(os.path.join(python_libdir, f"libpython{python_version}{stem}{ext}"))
+        for path in candidate_libs:
+            if os.path.exists(path):
+                cmake_args.append(f"-DPython3_LIBRARIES={path}")
                 break
         build_args = []
         

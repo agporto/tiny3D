@@ -294,11 +294,14 @@ include(3rdparty/find_dependencies.cmake)
 # Tiny3D library
 
 # --- Configure Python packaging files for versioning and portability ---
+option(SKIP_CONFIGURE_SETUP_PY "Do not overwrite existing python/setup.py when building from setup.py" OFF)
 if(BUILD_PYTHON_MODULE)
-    configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/python/setup.py.in"
-        "${CMAKE_CURRENT_SOURCE_DIR}/python/setup.py"
-        @ONLY)
+    if(NOT SKIP_CONFIGURE_SETUP_PY)
+        configure_file(
+            "${CMAKE_CURRENT_SOURCE_DIR}/python/setup.py.in"
+            "${CMAKE_CURRENT_SOURCE_DIR}/python/setup.py"
+            @ONLY)
+    endif()
     configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/python/tiny3d/__init__.py.in"
         "${CMAKE_CURRENT_SOURCE_DIR}/python/tiny3d/__init__.py"
