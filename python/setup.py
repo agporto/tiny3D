@@ -55,6 +55,12 @@ class CMakeBuild(build_ext):
             "-DBUILD_SHARED_LIBS=OFF",
             "-DSKIP_CONFIGURE_SETUP_PY=ON",
         ]
+        # Windows native import failure most likely due to missing OpenMP runtime (vcomp140.dll) in target env (e.g. Slicer).
+        # Temporarily disable OpenMP on Windows wheel builds unless explicitly overridden.
+        if os.name == "nt" and not os.environ.get("TINY3D_WITH_OPENMP_WINDOWS", "").lower() in {"1","true","on"}:
+            cmake_args.append("-DWITH_OPENMP=OFF")
+            if os.environ.get("TINY3D_VERBOSE"):
+                print("[tiny3d] Disabling OpenMP on Windows (set TINY3D_WITH_OPENMP_WINDOWS=1 to force enable).")
         # Hint root (helps if multiple versions present)
         if python_prefix:
             cmake_args.append(f"-DPython3_ROOT_DIR={python_prefix}")
