@@ -1,127 +1,137 @@
-<p align="center">
-<img src="https://raw.githubusercontent.com/isl-org/tiny3d/main/docs/_static/tiny3d_logo_horizontal.png" width="320" />
-</p>
-
-# tiny3d: A Modern Library for 3D Data Processing
-
-<h4>
-    <a href="https://www.tiny3d.org">Homepage</a> |
-    <a href="https://www.tiny3d.org/docs">Docs</a> |
-    <a href="https://www.tiny3d.org/docs/release/getting_started.html">Quick Start</a> |
-    <a href="https://www.tiny3d.org/docs/release/compilation.html">Compile</a> |
-    <a href="https://www.tiny3d.org/docs/release/index.html#python-api-index">Python</a> |
-    <a href="https://www.tiny3d.org/docs/release/cpp_api.html">C++</a> |
-    <a href="https://github.com/isl-org/tiny3d-ML">tiny3d-ML</a> |
-    <a href="https://github.com/isl-org/tiny3d/releases">Viewer</a> |
-    <a href="https://www.tiny3d.org/docs/release/contribute/contribute.html">Contribute</a> |
-    <a href="https://www.youtube.com/channel/UCRJBlASPfPBtPXJSPffJV-w">Demo</a> |
-    <a href="https://github.com/isl-org/tiny3d/discussions">Forum</a>
-</h4>
-
-tiny3d is an open-source library that supports rapid development of software
-that deals with 3D data. The tiny3d frontend exposes a set of carefully selected
-data structures and algorithms in both C++ and Python. The backend is highly
-optimized and is set up for parallelization. We welcome contributions from
-the open-source community.
-
-[![Ubuntu CI](https://github.com/isl-org/tiny3d/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/isl-org/tiny3d/actions?query=workflow%3A%22Ubuntu+CI%22)
-[![macOS CI](https://github.com/isl-org/tiny3d/actions/workflows/macos.yml/badge.svg)](https://github.com/isl-org/tiny3d/actions?query=workflow%3A%22macOS+CI%22)
-[![Windows CI](https://github.com/isl-org/tiny3d/actions/workflows/windows.yml/badge.svg)](https://github.com/isl-org/tiny3d/actions?query=workflow%3A%22Windows+CI%22)
-
-**Core features of tiny3d include:**
-
--   3D data structures
--   3D data processing algorithms
--   Scene reconstruction
--   Surface alignment
--   3D visualization
--   Physically based rendering (PBR)
--   3D machine learning support with PyTorch and TensorFlow
--   GPU acceleration for core 3D operations
--   Available in C++ and Python
-
-Here's a brief overview of the different components of tiny3d and how they fit
 together to enable full end to end pipelines:
+<h1 align="center">tiny3D</h1>
+<p align="center"><em>A lean, point‑cloud–centric subset of the Open3D library.</em></p>
 
-![tiny3d_layers](https://github.com/isl-org/tiny3d/assets/41028320/e9b8645a-a823-4d78-8310-e85207bbc3e4)
+---
 
-For more, please visit the [tiny3d documentation](https://www.tiny3d.org/docs).
+> DISCLAIMER & ATTRIBUTION: This repository is an independent, reduced fork of the
+> original <a href="https://github.com/isl-org/Open3D">Open3D</a> project. The design,
+> architecture, and the majority of the original implementation were created by the
+> Open3D team and contributors under the MIT License. This fork removes large
+> subsystems to provide a smaller, faster‑building core focused on point cloud
+> processing. All original copyrights remain intact.
 
-## Python quick start
+---
 
-Pre-built pip packages support Ubuntu 20.04+, macOS 10.15+ and Windows 10+
-(64-bit) with Python 3.8-3.11.
+## Why tiny3D?
+
+| Goal | tiny3D Approach |
+|------|-----------------|
+| Smaller install size | Strip visualization, rendering, ML, heavy optional modules |
+| Faster build & CI | Fewer dependencies; CPU‑only; simplified targets |
+| Easier embedding | Minimal surface area & reduced transitive libs |
+| Focus | Core point cloud + essential geometry ops |
+
+## Retained Features
+
+- Point cloud container & basic mesh / voxel helpers
+- KD-tree (nanoflann) nearest neighbor queries
+- Core registration (e.g. ICP classes / feature alignment)
+- Common point cloud / mesh file I/O (e.g. PLY)
+- Lightweight utilities (logging, filesystem, random, progress)
+
+## Removed / Not Included
+
+- Advanced visualization & GUI / viewer applications
+- Rendering / PBR materials
+- Machine learning integration (PyTorch / TensorFlow bindings)
+- CUDA / GPU acceleration layer (CPU‑only currently)
+- Extensive mesh / geometry algorithms not essential to point cloud workflows
+- Jupyter widget integrations & rich notebook tooling
+
+## Installation (Python)
+
+Prebuilt experimental wheels (as CI matures) target Linux x86_64, Windows 64‑bit, and macOS (x86_64 & arm64).
 
 ```bash
-# Install
-pip install tiny3d       # or
-pip install tiny3d-cpu   # Smaller CPU only wheel on x86_64 Linux (v0.17+)
-
-# Verify installation
-python -c "import tiny3d as o3d; print(o3d.__version__)"
-
-# Python API
-python -c "import tiny3d as o3d; \
-           mesh = o3d.geometry.TriangleMesh.create_sphere(); \
-           mesh.compute_vertex_normals(); \
-           o3d.visualization.draw(mesh, raw_mode=True)"
-
-# tiny3d CLI
-tiny3d example visualization/draw
+pip install tiny3d
+python -c "import tiny3d; print(tiny3d.__version__)"
 ```
 
-To get the latest features in tiny3d, install the
-[development pip package](https://www.tiny3d.org/docs/latest/getting_started.html#development-version-pip).
-To compile tiny3d from source, refer to
-[compiling from source](https://www.tiny3d.org/docs/release/compilation.html).
+### Build From Source (Python)
 
-## C++ quick start
+```bash
+pip install --upgrade pip build
+pip install -r python/requirements.txt
+pip install ./python
+```
 
-Checkout the following links to get started with tiny3d C++ API
+Verbose build:
 
--   Download tiny3d binary package: [Release](https://github.com/isl-org/tiny3d/releases) or [latest development version](https://www.tiny3d.org/docs/latest/getting_started.html#c)
--   [Compiling tiny3d from source](https://www.tiny3d.org/docs/release/compilation.html)
--   [tiny3d C++ API](https://www.tiny3d.org/docs/release/cpp_api.html)
+```bash
+TINY3D_VERBOSE=1 pip install ./python
+```
 
-To use tiny3d in your C++ project, checkout the following examples
+### C++ Core Only
 
--   [Find Pre-Installed tiny3d Package in CMake](https://github.com/isl-org/tiny3d-cmake-find-package)
--   [Use tiny3d as a CMake External Project](https://github.com/isl-org/tiny3d-cmake-external-project)
+```bash
+cmake -S . -B build -DBUILD_PYTHON_MODULE=OFF -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
+```
 
-## tiny3d-Viewer app
+## Minimal Python Example
 
-<img width="480" src="https://raw.githubusercontent.com/isl-org/tiny3d/main/docs/_static/tiny3d_viewer.png">
+```python
+import tiny3d as t3d
 
-tiny3d-Viewer is a standalone 3D viewer app available on Debian (Ubuntu), macOS
-and Windows. Download tiny3d Viewer from the
-[release page](https://github.com/isl-org/tiny3d/releases).
+pcd = t3d.geometry.PointCloud()
+print("Point count:", len(pcd.points))
+```
 
-## tiny3d-ML
+## Differences vs Open3D
 
-<img width="480" src="https://raw.githubusercontent.com/isl-org/tiny3d-ML/main/docs/images/getting_started_ml_visualizer.gif">
+| Area | Open3D | tiny3D |
+|------|--------|--------|
+| Scope | Broad 3D (rendering, ML, visualization) | Point cloud–focused core |
+| GPU | CPU + optional CUDA | CPU only |
+| Visualization | Rich UI | Removed |
+| ML bindings | PyTorch / TF | Removed |
+| Build time | Larger | Reduced |
+| Binary size | Larger | Smaller |
 
-tiny3d-ML is an extension of tiny3d for 3D machine learning tasks. It builds on
-top of the tiny3d core library and extends it with machine learning tools for
-3D data processing. To try it out, install tiny3d with PyTorch or TensorFlow and check out
-[tiny3d-ML](https://github.com/isl-org/tiny3d-ML).
+## Troubleshooting
 
-## Communication channels
+| Symptom | Likely Cause | Fix |
+|---------|--------------|-----|
+| `_HAVE_NATIVE` False | Native module import failed | Reinstall with `TINY3D_VERBOSE=1`; confirm platform tag matches Python |
+| Windows DLL load fail | Missing OpenMP runtime (now disabled by default) | Use latest wheel; if enabling OpenMP set `TINY3D_WITH_OPENMP_WINDOWS=1` and ensure VC runtime installed |
+| Version mismatch | Stale build artifacts | Clear pip cache & reinstall |
 
--   [GitHub Issue](https://github.com/isl-org/tiny3d/issues): bug reports,
-    feature requests, etc.
--   [Forum](https://github.com/isl-org/tiny3d/discussions): discussion on the usage of tiny3d.
--   [Discord Chat](https://discord.gg/D35BGvn): online chats, discussions,
-    and collaboration with other users and developers.
 
-## Citation
+## Contributing
 
-Please cite [our work](https://arxiv.org/abs/1801.09847) if you use tiny3d.
+Scope is intentionally narrow. Please open an issue before large feature PRs. Welcomed:
 
-```bib
+- Performance or stability improvements
+- Bug fixes & packaging robustness
+- Documentation corrections
+
+## License
+
+MIT License – see `LICENSE`.
+
+```
+Copyright (c) Open3D authors
+Copyright (c) tiny3D fork maintainers
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+... (full text in LICENSE)
+```
+
+### Attribution
+
+Derived from the Open3D project (https://github.com/isl-org/Open3D). If you use this fork academically, please cite the original Open3D paper:
+
+```bibtex
 @article{Zhou2018,
-    author    = {Qian-Yi Zhou and Jaesik Park and Vladlen Koltun},
-    title     = {{tiny3d}: {A} Modern Library for {3D} Data Processing},
-    journal   = {arXiv:1801.09847},
-    year      = {2018},
+    author  = {Qian-Yi Zhou and Jaesik Park and Vladlen Koltun},
+    title   = {Open3D: A Modern Library for 3D Data Processing},
+    journal = {arXiv:1801.09847},
+    year    = {2018}
 }
 ```
+
+## Disclaimer
+
+This fork is provided "as is". Missing functionality compared to upstream Open3D is by design.
+
