@@ -39,10 +39,9 @@ class CMakeBuild(build_ext):
 
         # Set Python_EXECUTABLE instead of PYTHON_EXECUTABLE to help CMake find the right Python
         import sysconfig
-        import os
         python_include = sysconfig.get_path('include')
         python_library = sysconfig.get_config_var('LIBDIR')
-        
+
         cmake_args = [
             f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={extdir}",
             f"-DPYTHON_EXECUTABLE={sys.executable}",
@@ -119,20 +118,30 @@ class CMakeBuild(build_ext):
             ["cmake", "--build", ".", "--target", "pybind"] + build_args, cwd=build_temp
         )
         
-        # Copy the built library to the expected location
-        built_lib = build_temp / "cpp" / "pybind" / f"pybind{self._get_lib_suffix()}"
-        if built_lib.exists():
-            import shutil
-            target_path = Path(extdir) / f"pybind{self._get_lib_suffix()}"
-            target_path.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(built_lib, target_path)
-    
-    def _get_lib_suffix(self):
-        """Get the platform-specific library suffix"""
-        if sys.platform.startswith("win"):
-            return ".pyd"
-        else:
-            return ".so"
+        # Locate the built pybind module (which may have an ABI tag in its filename)
+        # CMake currently places it under "<extdir>/Python/cpu" unless overridden.
+        candidate_dirs = [Path(extdir) / "Python" / "cpu", Path(extdir)]
+        built_candidates = []
+        for d in candidate_dirs:
+            if d.exists():
+                built_candidates.extend(list(d.glob("pybind*.so")))
+                built_candidates.extend(list(d.glob("pybind*.pyd")))
+        # Fallback: search the entire build tree (last resort)
+        if not built_candidates:
+            for p in Path(build_temp).rglob("pybind*.so"):
+                built_candidates.append(p)
+            for p in Path(build_temp).rglob("pybind*.pyd"):
+                built_candidates.append(p)
+        if not built_candidates:
+            raise RuntimeError("Could not locate built pybind extension after CMake build")
+        # Prefer the longest filename (likely includes full ABI tag)
+        built_candidates.sort(key=lambda p: len(p.name), reverse=True)
+        selected = built_candidates[0]
+        # Expected final path from setuptools (full path to extension)
+        expected_fullpath = Path(self.get_ext_fullpath(ext.name))
+        expected_fullpath.parent.mkdir(parents=True, exist_ok=True)
+        import shutil
+        shutil.copy2(selected, expected_fullpath)
 
 # Define the extension
 ext_modules = [
