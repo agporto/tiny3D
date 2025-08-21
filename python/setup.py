@@ -70,6 +70,11 @@ class CMakeBuild(build_ext):
         build_temp = Path(self.build_temp) / ext.name
         if not build_temp.exists():
             build_temp.mkdir(parents=True)
+        
+        # Clean any existing CMake cache to avoid conflicts
+        cache_file = build_temp / "CMakeCache.txt"
+        if cache_file.exists():
+            cache_file.unlink()
 
         # Configure
         subprocess.check_call(
@@ -80,6 +85,21 @@ class CMakeBuild(build_ext):
         subprocess.check_call(
             ["cmake", "--build", ".", "--target", "pybind"] + build_args, cwd=build_temp
         )
+        
+        # Copy the built library to the expected location
+        built_lib = build_temp / "cpp" / "pybind" / f"pybind{self._get_lib_suffix()}"
+        if built_lib.exists():
+            import shutil
+            target_path = Path(extdir) / f"pybind{self._get_lib_suffix()}"
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(built_lib, target_path)
+    
+    def _get_lib_suffix(self):
+        """Get the platform-specific library suffix"""
+        if sys.platform.startswith("win"):
+            return ".pyd"
+        else:
+            return ".so"
 
 # Define the extension
 ext_modules = [
