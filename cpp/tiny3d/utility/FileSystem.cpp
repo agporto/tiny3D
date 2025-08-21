@@ -29,12 +29,14 @@
 #ifdef WIN32
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 #endif
-#ifdef __APPLE__
-#include <filesystem>
-namespace fs = std::__fs::filesystem;
+#if __has_include(<filesystem>)
+    #include <filesystem>
+    namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+    #include <experimental/filesystem>
+    namespace fs = std::experimental::filesystem;
 #else
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
+    #error "No <filesystem> support detected"
 #endif
 
 #include "tiny3d/utility/Logging.h"
@@ -296,19 +298,23 @@ bool ListDirectory(const std::string &directory,
     subdirs.clear();
     filenames.clear();
     std::error_code ec;
-    for (auto it = fs::directory_iterator(directory, ec); !ec && it != fs::directory_iterator(); ++it) {
-        const auto &p = it->path();
+    fs::directory_iterator end_iter; // default end
+    for (fs::directory_iterator it(directory, ec); !ec && it != end_iter; it.increment(ec)) {
+        if (ec) break;
+        std::error_code stat_ec;
+        auto p = it->path();
         std::string name = p.filename().string();
-        if (name.empty() || name[0] == '.') continue; // skip hidden / dot entries
+        if (name.empty() || name[0] == '.') continue;
+        auto st = fs::symlink_status(p, stat_ec);
+        if (stat_ec) continue;
         std::string full = p.string();
-        std::error_code status_ec;
-        if (it->is_directory(status_ec)) {
+        if (fs::is_directory(st)) {
             subdirs.push_back(full);
-        } else if (it->is_regular_file(status_ec)) {
+        } else if (fs::is_regular_file(st)) {
             filenames.push_back(full);
         }
     }
-    return !ec;
+    return ec ? false : true;
 }
 
 bool ListFilesInDirectory(const std::string &directory,
