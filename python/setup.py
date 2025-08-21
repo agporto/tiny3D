@@ -51,6 +51,8 @@ class CMakeBuild(build_ext):
             f"-DBUILD_PYTHON_MODULE=ON",
             f"-DBUILD_UNIT_TESTS=OFF",
             f"-DBUILD_BENCHMARKS=OFF",
+            # Build a self-contained extension (static core lib) to avoid separate DLL/.so runtime issues in wheels.
+            "-DBUILD_SHARED_LIBS=OFF",
             "-DSKIP_CONFIGURE_SETUP_PY=ON",
         ]
         # Hint root (helps if multiple versions present)
@@ -152,6 +154,22 @@ class CMakeBuild(build_ext):
             expected_fullpath.parent.mkdir(parents=True, exist_ok=True)
             import shutil
             shutil.copy2(selected, expected_fullpath)
+
+        # If shared libs were built (custom user build overriding our OFF), also copy sibling Tiny3D/lib deps.
+        sibling_dir = selected.parent
+        if any(p.name.startswith("Tiny3D") for p in sibling_dir.glob("*.dll")) or any(p.name.startswith("libTiny3D") for p in sibling_dir.glob("*.so*")):
+            patterns = ["Tiny3D*.dll", "libTiny3D*.so*", "libTiny3D*.dylib"]
+            for pat in patterns:
+                for lib in sibling_dir.glob(pat):
+                    dest = expected_fullpath.parent / lib.name
+                    if lib.resolve() != dest.resolve():
+                        try:
+                            import shutil
+                            shutil.copy2(lib, dest)
+                            if os.environ.get("TINY3D_VERBOSE"):
+                                print(f"[tiny3d] Copied runtime dependency {lib.name}")
+                        except Exception as e:  # noqa: BLE001
+                            print(f"[tiny3d] Warning: could not copy dependency {lib}: {e}")
 
 # Define the extension
 ext_modules = [
