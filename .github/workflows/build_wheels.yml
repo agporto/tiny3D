@@ -1,27 +1,22 @@
-# Build cross-platform wheels for Windows, macOS, and Linux using cibuildwheel.
-# Handles manylinux compatibility and cross-compilation automatically.
-
 name: Build tiny3D Wheels (cross-platform)
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
-  - name: "Set up Python (match wheel matrix: temporarily cp39 only)"
+      - name: Set up host Python (cp39 for testing built wheels)
         uses: actions/setup-python@v5
         with:
           python-version: '3.9'
@@ -29,32 +24,33 @@ jobs:
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.16.2
 
-      - name: Build wheels
-        run: python -m cibuildwheel python --output-dir wheelhouse
+      - name: Build wheels (cp39 only temporary)
         env:
-          CIBW_PROJECT_REQUIRES_PYTHON: ">=3.8"
-          # Temporarily only build cp39 wheels; reinstate others (cp38 cp310 cp311 cp312) later
-          CIBW_BUILD: "cp39-*"
-          CIBW_SKIP: "pp* *-musllinux*"  # Skip PyPy and musl builds
-          CIBW_ARCHS_LINUX: "x86_64"
-          CIBW_ARCHS_WINDOWS: "AMD64"
+          # Only build cp39 during debugging; re-enable others later (cp38 cp310 cp311 cp312)
+          CIBW_BUILD: cp39-*
+          CIBW_SKIP: "pp* *-musllinux*"
+          CIBW_ARCHS_LINUX: x86_64
+          CIBW_ARCHS_WINDOWS: AMD64
+            # Build universal2 later if needed; for now both arch wheels separately
           CIBW_ARCHS_MACOS: "x86_64 arm64"
-          CIBW_MANYLINUX_X86_64_IMAGE: "manylinux_2_28"
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
           CIBW_BEFORE_BUILD_LINUX: >
             dnf install -y --nogpgcheck cmake ninja-build gcc-c++ python3-devel &&
             pip install cmake ninja &&
             rm -f /project/CMakeCache.txt /project/cmake_install.cmake
-          CIBW_BEFORE_BUILD_WINDOWS: >
-            pip install cmake ninja
-          CIBW_BEFORE_BUILD_MACOS: >
-            pip install cmake ninja
-          CIBW_BUILD_VERBOSITY: 1
-          CIBW_BUILD_FRONTEND: "build"
+          CIBW_BEFORE_BUILD_WINDOWS: pip install cmake ninja
+          CIBW_BEFORE_BUILD_MACOS: pip install cmake ninja
+          # Inline test executed inside each wheel build environment after build
+          CIBW_TEST_COMMAND: >
+            python -c "import tiny3d, sys; print('tiny3d test import:', tiny3d.__version__, 'native:', tiny3d._HAVE_NATIVE, 'py:', sys.version.split()[0])"
+          CIBW_BUILD_VERBOSITY: '1'
+          CIBW_BUILD_FRONTEND: build
+        run: python -m cibuildwheel --output-dir wheelhouse
 
-      - name: Test wheel install
+      - name: Host smoke install
         run: |
           python -m pip install --find-links wheelhouse tiny3d
-          python -c "import tiny3d; print('tiny3d version:', tiny3d.__version__); print('Native support:', tiny3d._HAVE_NATIVE)"
+          python -c "import tiny3d, sys; print('Host import OK:', tiny3d.__version__, 'native:', tiny3d._HAVE_NATIVE, 'py:', sys.version.split()[0])"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
@@ -62,9 +58,9 @@ jobs:
           name: wheels-${{ matrix.os }}
           path: wheelhouse/*.whl
 
-# To publish to PyPI, uncomment and configure the following step:
-#      - name: Publish to PyPI
-#        uses: pypa/gh-action-pypi-publish@v1
-#        with:
-#          user: __token__
-#          password: ${{ secrets.PYPI_API_TOKEN }}
+# PyPI publish step (disabled)
+#  - name: Publish to PyPI
+#    uses: pypa/gh-action-pypi-publish@v1
+#    with:
+#      user: __token__
+#      password: ${{ secrets.PYPI_API_TOKEN }}
