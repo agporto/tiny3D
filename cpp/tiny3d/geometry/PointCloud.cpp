@@ -20,6 +20,10 @@
 #include <limits>  // For std::numeric_limits
 #include <numeric> // For std::accumulate in helpers
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 #include "tiny3d/geometry/BoundingVolume.h" // For AxisAlignedBoundingBox
 #include "tiny3d/geometry/KDTreeFlann.h" // Needed for EstimateNormals
 #include "tiny3d/geometry/KDTreeSearchParam.h" // Needed for EstimateNormals

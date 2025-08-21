@@ -1,7 +1,7 @@
-# Build pure-Python wheels for Windows, macOS, and Linux and upload as artifacts.
-# (No native extensions yet; adjust when adding compiled code.)
+# Build cross-platform wheels for Windows, macOS, and Linux using cibuildwheel.
+# Handles manylinux compatibility and cross-compilation automatically.
 
-name: Build tiny3D Wheels (with native core)
+name: Build tiny3D Wheels (cross-platform)
 
 on:
   push:
@@ -12,7 +12,7 @@ on:
 
 jobs:
   build_wheels:
-    name: Build tiny3D wheels on ${{ matrix.os }}
+    name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -26,40 +26,32 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install build tooling
-        run: |
-          pip install --upgrade pip
-          pip install build wheel
-          pip install cmake ninja
+      - name: Install cibuildwheel
+        run: python -m pip install cibuildwheel==2.16.2
 
-      - name: Configure & build (C++)
-        run: |
-          cmake -S . -B build -DBUILD_PYTHON_MODULE=ON -GNinja -DCMAKE_BUILD_TYPE=Release
-          cmake --build build --target pybind
+      - name: Build wheels
+        run: python -m cibuildwheel --output-dir wheelhouse
+        env:
+          CIBW_PROJECT_REQUIRES_PYTHON: ">=3.8"
+          CIBW_SKIP: "pp* *-musllinux*"  # Skip PyPy and musl builds
+          CIBW_ARCHS_LINUX: "x86_64"
+          CIBW_ARCHS_WINDOWS: "AMD64"
+          CIBW_ARCHS_MACOS: "x86_64 arm64"
+          CIBW_BEFORE_BUILD_LINUX: >
+            yum install -y cmake ninja-build &&
+            pip install cmake ninja
+          CIBW_BEFORE_BUILD_WINDOWS: >
+            pip install cmake ninja
+          CIBW_BEFORE_BUILD_MACOS: >
+            pip install cmake ninja
+          CIBW_BUILD_VERBOSITY: 1
+          # Point to the python package subdirectory
+          CIBW_BUILD_FRONTEND: "build[uv]"
 
-      - name: Create python package (CMake python-package target)
+      - name: Test wheel install
         run: |
-          cmake --build build --target python-package
-
-      - name: Build wheel via pip-package target
-        run: |
-          cmake --build build --target pip-package
-          mkdir -p wheelhouse
-          cp build/lib/python_package/pip_package/*.whl wheelhouse/
-
-      - name: Test wheel (import tiny3d)
-        shell: bash
-        run: |
-          set -euo pipefail
-          python -m venv venv
-          if [ -f venv/Scripts/activate ]; then
-            . venv/Scripts/activate
-          else
-            . venv/bin/activate
-          fi
-          python -m pip install --upgrade pip
-          python -m pip install wheelhouse/tiny3d*-*.whl
-          python -c "import tiny3d, sys, platform; print('tiny3d imported, version:', getattr(tiny3d,'__version__','unknown')); print('Python:', sys.version); print('Platform:', platform.platform()); print('Native bindings present:', getattr(tiny3d,'_HAVE_NATIVE', False)); import tiny3d.cpu.pybind as m; print('Loaded native module:', m)"
+          python -m pip install --find-links wheelhouse tiny3d
+          python -c "import tiny3d; print('tiny3d version:', tiny3d.__version__); print('Native support:', tiny3d._HAVE_NATIVE)"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4

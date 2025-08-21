@@ -37,7 +37,7 @@
 
 // Compiler-specific function macro.
 // Ref: https://stackoverflow.com/a/4384825
-#ifdef _WIN32
+#ifdef _MSC_VER
 #define TINY3D_FUNCTION __FUNCSIG__
 #else
 #define TINY3D_FUNCTION __PRETTY_FUNCTION__

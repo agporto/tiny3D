@@ -9,6 +9,10 @@
 
 #include <Eigen/Dense>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 #include "tiny3d/geometry/KDTreeFlann.h"
 #include "tiny3d/geometry/PointCloud.h"
 #include "tiny3d/utility/Logging.h"
