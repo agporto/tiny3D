@@ -141,12 +141,16 @@ class CMakeBuild(build_ext):
         if os.environ.get("TINY3D_VERBOSE"):
             print("[tiny3d] Selected built module:", selected)
             print("[tiny3d] Target path:", expected_fullpath)
+            print("[tiny3d] Target directory:", expected_fullpath.parent)
+            print("[tiny3d] Target directory exists:", expected_fullpath.parent.exists())
         # If CMake already placed the file exactly where setuptools expects it, skip copy.
         try:
             if selected.resolve() != expected_fullpath.resolve():
                 expected_fullpath.parent.mkdir(parents=True, exist_ok=True)
                 import shutil
                 shutil.copy2(selected, expected_fullpath)
+                if os.environ.get("TINY3D_VERBOSE"):
+                    print(f"[tiny3d] Copied {selected} -> {expected_fullpath}")
             elif os.environ.get("TINY3D_VERBOSE"):
                 print("[tiny3d] Copy skipped: source and destination are identical.")
         except FileNotFoundError:

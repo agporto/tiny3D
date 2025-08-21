@@ -48,6 +48,8 @@ jobs:
             pip install cmake ninja
           CIBW_BUILD_VERBOSITY: 1
           CIBW_BUILD_FRONTEND: "build"
+          # Enable debug output to see what's happening with extension building/copying
+          CIBW_ENVIRONMENT: "TINY3D_VERBOSE=1"
 
       - name: Test wheel install
         run: |
