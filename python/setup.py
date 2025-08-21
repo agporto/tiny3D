@@ -75,6 +75,14 @@ class CMakeBuild(build_ext):
         cache_file = build_temp / "CMakeCache.txt"
         if cache_file.exists():
             cache_file.unlink()
+            
+        # Also clean any cache files in the project root
+        project_cache = project_root / "CMakeCache.txt"
+        if project_cache.exists():
+            project_cache.unlink()
+        project_install = project_root / "cmake_install.cmake"
+        if project_install.exists():
+            project_install.unlink()
 
         # Configure
         subprocess.check_call(
