@@ -44,7 +44,7 @@ jobs:
             pip install cmake ninja &&
             rm -f /project/CMakeCache.txt /project/cmake_install.cmake
           CIBW_BEFORE_BUILD_WINDOWS: >
-            pip install cmake ninja mkl-devel
+            pip install cmake ninja mkl-devel delvewheel
           CIBW_BEFORE_BUILD_MACOS: >
             pip install cmake ninja
           CIBW_BUILD_VERBOSITY: 1
@@ -53,6 +53,7 @@ jobs:
           CIBW_ENVIRONMENT: "TINY3D_VERBOSE=1"
           # Enable OpenMP on Windows with Intel runtime (more reliable)
           CIBW_ENVIRONMENT_WINDOWS: "TINY3D_VERBOSE=1 TINY3D_WITH_OPENMP_WINDOWS=1 CMAKE_ARGS=-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -w {dest_dir} {wheel}"
 
       - name: Test wheel install (cp39)
         uses: actions/setup-python@v5
