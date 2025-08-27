@@ -50,7 +50,8 @@ jobs:
           CIBW_BUILD_VERBOSITY: 1
           CIBW_BUILD_FRONTEND: "build"
           # Enable debug output to see what's happening with extension building/copying
-          CIBW_ENVIRONMENT: "TINY3D_VERBOSE=1"
+          # Enable OpenMP on Windows for multi-core performance
+          CIBW_ENVIRONMENT_WINDOWS: "TINY3D_VERBOSE=1 TINY3D_WITH_OPENMP_WINDOWS=1"
 
       - name: Test wheel install (cp39)
         uses: actions/setup-python@v5
