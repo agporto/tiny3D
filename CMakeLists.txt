@@ -265,16 +265,6 @@ if(WIN32)
     else()
         set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
     endif()
-    if(MSVC)
-      # Prefer dynamic CRT (/MD, /MDd). This avoids debug CRT surprises when loading in CPython.
-      set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL" CACHE STRING "" FORCE)
-    
-      # Release codegen knobs; keep them MSVC-only
-      string(APPEND CMAKE_CXX_FLAGS_RELEASE " /O2 /GL /arch:AVX2 /fp:fast")
-      string(APPEND CMAKE_C_FLAGS_RELEASE     " /O2 /GL /arch:AVX2 /fp:fast")
-      string(APPEND CMAKE_EXE_LINKER_FLAGS_RELEASE   " /LTCG /OPT:REF /OPT:ICF")
-      string(APPEND CMAKE_SHARED_LINKER_FLAGS_RELEASE " /LTCG /OPT:REF /OPT:ICF")
-    endif()
 endif()
 
 # Folder view for project files
@@ -298,23 +288,6 @@ include(Tiny3DLink3rdpartyLibraries)
 include(Tiny3DSetGlobalProperties)
 include(Tiny3DShowAndAbortOnWarning)
 include(Tiny3DSYCLTargetSources)
-
-# Ensure MSVC runtime selection is defined first
-if(MSVC)
-  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL" CACHE STRING "" FORCE)
-endif()
-
-# Helper to force multi-config EPs to build+install Release
-function(tiny3d_ep_release_args out_var)
-  set(args
-    CMAKE_ARGS
-      -DCMAKE_BUILD_TYPE=Release
-      -DCMAKE_MSVC_RUNTIME_LIBRARY=${CMAKE_MSVC_RUNTIME_LIBRARY}
-    BUILD_COMMAND   ${CMAKE_COMMAND} --build . --config Release
-    INSTALL_COMMAND ${CMAKE_COMMAND} --install . --config Release
-  )
-  set(${out_var} ${args} PARENT_SCOPE)
-endfunction()
 
 # Enumerate all third-party libraries which we need later
 # This creates the necessary targets and sets the
