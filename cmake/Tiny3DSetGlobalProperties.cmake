@@ -131,8 +131,22 @@ function(tiny3d_set_global_properties target)
             # Option 2, at configure time: add /MP flag, no need to use Option 1
             # https://docs.microsoft.com/en-us/cpp/build/reference/mp-build-with-multiple-processes?view=vs-2019
             target_compile_options(${target} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:/MP>)
+            # Add critical Windows optimization flags for performance parity with Open3D
+            target_compile_options(${target} PRIVATE 
+                "$<$<CONFIG:Release,MinSizeRel,RelWithDebInfo>:/Oi>"    # Enable intrinsic functions
+                "$<$<CONFIG:Release,MinSizeRel,RelWithDebInfo>:/Ot>"    # Favor fast code over small code  
+                "$<$<CONFIG:Release,MinSizeRel,RelWithDebInfo>:/Oy->"   # Suppress frame pointer omission (for debugging)
+                "$<$<CONFIG:Release,MinSizeRel,RelWithDebInfo>:/GT>"    # Supports fiber-safe thread-local storage
+                "$<$<CONFIG:Release,MinSizeRel,RelWithDebInfo>:/favor:INTEL64>"  # Optimize for x64 processors
+                "$<$<CONFIG:Release,MinSizeRel,RelWithDebInfo>:/arch:AVX2>"      # Enable AVX2 vectorization
+            )
+            # Add linker optimizations for release builds
+            target_link_options(${target} PRIVATE 
+                "$<$<CONFIG:Release,MinSizeRel,RelWithDebInfo>:/OPT:REF>"    # Eliminate unreferenced functions/data
+                "$<$<CONFIG:Release,MinSizeRel,RelWithDebInfo>:/OPT:ICF>"    # Enable COMDAT folding
+            )
             # The examples' .pdb files use up a lot of space and cause us to run
-            # out of space on Github Actions. Compressing gives us another couple of GB.
+            # out of space on GitHub Actions. Compressing gives us another couple of GB.
             target_link_options(${target} PRIVATE /pdbcompress)
         endif()
     elseif(APPLE)

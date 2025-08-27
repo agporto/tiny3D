@@ -259,8 +259,17 @@ if(WIN32)
         #
         # See: https://github.com/tensorflow/tensorflow/pull/10962
         add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/bigobj;/Ob2>")
+        # Core optimization flags matching Open3D performance
         add_compile_options(
             "$<$<AND:$<CONFIG:Release,MinSizeRel,RelWithDebInfo>,$<COMPILE_LANGUAGE:CXX>>:/O2;/fp:fast>"
+        )
+        # Add critical MSVC optimization flags from Open3D for Windows performance
+        add_compile_options(
+            "$<$<AND:$<CONFIG:Release,MinSizeRel,RelWithDebInfo>,$<COMPILE_LANGUAGE:CXX>>:/MP;/Oi;/Ot;/Oy-;/GT;/arch:AVX2>"
+        )
+        # Add linker optimization flags for release builds
+        add_link_options(
+            "$<$<CONFIG:Release,MinSizeRel,RelWithDebInfo>:/LTCG;/OPT:REF;/OPT:ICF>"
         )
     endif()
     if (STATIC_WINDOWS_RUNTIME)

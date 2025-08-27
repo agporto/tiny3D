@@ -51,8 +51,15 @@ jobs:
           CIBW_BUILD_FRONTEND: "build"
           # Enable debug output to see what's happening with extension building/copying
           CIBW_ENVIRONMENT: "TINY3D_VERBOSE=1"
-          # Enable OpenMP on Windows with Intel runtime (more reliable)
-          CIBW_ENVIRONMENT_WINDOWS: "TINY3D_VERBOSE=1 TINY3D_WITH_OPENMP_WINDOWS=1 CMAKE_ARGS=-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON"
+          # Enable OpenMP on Windows with Intel runtime (more reliable) + Critical performance optimizations
+          CIBW_ENVIRONMENT_WINDOWS: >
+            TINY3D_VERBOSE=1 
+            TINY3D_WITH_OPENMP_WINDOWS=1 
+            CMAKE_BUILD_TYPE=Release
+            CMAKE_ARGS=-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON -DCMAKE_BUILD_TYPE=Release -DWITH_OPENMP=ON
+            CMAKE_CXX_FLAGS_RELEASE="/O2 /Oi /Ot /Oy- /GT /arch:AVX2 /fp:fast /MP /LTCG"
+            CMAKE_EXE_LINKER_FLAGS_RELEASE="/LTCG /OPT:REF /OPT:ICF"
+            CMAKE_SHARED_LINKER_FLAGS_RELEASE="/LTCG /OPT:REF /OPT:ICF"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -w {dest_dir} {wheel}"
 
       - name: Test wheel install (cp39)
