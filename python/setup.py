@@ -250,7 +250,7 @@ with open("README.rst") as readme:
 
 setup_args = dict(
     name=name,
-    version="0.0.0",
+    version="1.1.0",
     python_requires=">=3.8",
     include_package_data=True,
     install_requires=install_requires,
