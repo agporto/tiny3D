@@ -49,12 +49,6 @@ jobs:
             pip install cmake ninja
           CIBW_BUILD_VERBOSITY: 1
           CIBW_BUILD_FRONTEND: "build"
-          CIBW_ENVIRONMENT_WINDOWS: >
-            TINY3D_WITH_OPENMP_WINDOWS=1
-            CMAKE_BUILD_TYPE=Release
-            SKBUILD_BUILD_OPTIONS="--config Release"
-            CMAKE_CXX_FLAGS="/O2 /GL /arch:AVX2 /fp:fast"
-            CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON
           # Enable debug output to see what's happening with extension building/copying
           CIBW_ENVIRONMENT: "TINY3D_VERBOSE=1"
 
@@ -87,4 +81,5 @@ jobs:
 #        with:
 #          user: __token__
 #          password: ${{ secrets.PYPI_API_TOKEN }}
+
 
