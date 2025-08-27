@@ -18,6 +18,7 @@ ExternalProject_Add(
         -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
     BUILD_BYPRODUCTS 
         <INSTALL_DIR>/${Tiny3D_INSTALL_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}${lib_name}${lib_suffix}${CMAKE_STATIC_LIBRARY_SUFFIX}
+    ${EP_RELEASE}
 )
 
 ExternalProject_Get_Property(ext_openblas INSTALL_DIR)

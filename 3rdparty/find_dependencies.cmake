@@ -34,6 +34,9 @@ set(Tiny3D_3RDPARTY_HEADER_TARGETS_FROM_SYSTEM)
 set(Tiny3D_3RDPARTY_PRIVATE_TARGETS_FROM_CUSTOM)
 set(Tiny3D_3RDPARTY_PRIVATE_TARGETS_FROM_SYSTEM)
 
+include(ExternalProject)
+tiny3d_ep_release_args(EP_RELEASE)  # <- produces BUILD_COMMAND/INSTALL_COMMAND + CMAKE_ARGS
+
 find_package(PkgConfig QUIET)
 
 # tiny3d_build_3rdparty_library(name ...)
