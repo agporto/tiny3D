@@ -259,6 +259,9 @@ if(WIN32)
         #
         # See: https://github.com/tensorflow/tensorflow/pull/10962
         add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/bigobj;/Ob2>")
+        add_compile_options(
+            "$<$<AND:$<CONFIG:Release,MinSizeRel,RelWithDebInfo>,$<COMPILE_LANGUAGE:CXX>>:/O2;/fp:fast>"
+        )
     endif()
     if (STATIC_WINDOWS_RUNTIME)
         set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
