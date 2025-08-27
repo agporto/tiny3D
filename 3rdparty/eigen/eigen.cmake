@@ -14,6 +14,7 @@ ExternalProject_Add(
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""
+    ${EP_RELEASE}
 )
 
 ExternalProject_Get_Property(ext_eigen SOURCE_DIR)
