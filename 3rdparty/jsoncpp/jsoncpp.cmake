@@ -23,7 +23,6 @@ ExternalProject_Add(
         ${ExternalProject_CMAKE_ARGS_hidden}
     BUILD_BYPRODUCTS
         <INSTALL_DIR>/${Tiny3D_INSTALL_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}jsoncpp${CMAKE_STATIC_LIBRARY_SUFFIX}
-    ${EP_RELEASE}
 )
 
 ExternalProject_Get_Property(ext_jsoncpp INSTALL_DIR)
