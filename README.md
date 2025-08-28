@@ -1,4 +1,3 @@
-together to enable full end to end pipelines:
 <h1 align="center">tiny3D</h1>
 <p align="center"><em>A lean, point‑cloud–centric subset of the Open3D library.</em></p>
 
