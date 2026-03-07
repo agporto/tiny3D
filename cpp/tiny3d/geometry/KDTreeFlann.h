@@ -76,6 +76,12 @@ public:
                   std::vector<int> &indices,
                   std::vector<double> &distance2) const;
 
+    int SearchKNN(const double *query_data,
+                  int query_size,
+                  int knn,
+                  std::vector<int> &indices,
+                  std::vector<double> &distance2) const;
+
     template <typename T>
     int SearchRadius(const T &query,
                      double radius,

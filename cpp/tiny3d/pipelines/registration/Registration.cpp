@@ -21,66 +21,13 @@ namespace tiny3d {
 namespace pipelines {
 namespace registration {
 
-static RegistrationResult GetRegistrationResultAndCorrespondences(
-        const geometry::PointCloud &source,
-        const geometry::PointCloud &target,
-        const geometry::KDTreeFlann &target_kdtree,
-        double max_correspondence_distance,
-        const Eigen::Matrix4d &transformation) {
-    RegistrationResult result(transformation);
-    if (max_correspondence_distance <= 0.0) {
-        return result;
-    }
-
-    double error2 = 0.0;
-
-#pragma omp parallel
-    {
-        double error2_private = 0.0;
-        CorrespondenceSet correspondence_set_private;
-        std::vector<int> indices;
-        std::vector<double> dists;
-        indices.reserve(1);
-        dists.reserve(1);
-#pragma omp for nowait
-        for (int i = 0; i < (int)source.points_.size(); i++) {
-            const auto &point = source.points_[i];
-            if (target_kdtree.SearchHybrid(point, max_correspondence_distance,
-                                           1, indices, dists) > 0) {
-                error2_private += dists[0];
-                correspondence_set_private.push_back(
-                        Eigen::Vector2i(i, indices[0]));
-            }
-        }
-#pragma omp critical(GetRegistrationResultAndCorrespondences)
-        {
-            result.correspondence_set_.insert(result.correspondence_set_.end(),
-                                              correspondence_set_private.begin(),
-                                              correspondence_set_private.end());
-            error2 += error2_private;
-        }
-    }
-
-    if (result.correspondence_set_.empty()) {
-        result.fitness_ = 0.0;
-        result.inlier_rmse_ = 0.0;
-    } else {
-        size_t corres_number = result.correspondence_set_.size();
-        result.fitness_ = source.points_.empty()
-                                  ? 0.0
-                                  : (double)corres_number /
-                                            (double)source.points_.size();
-        result.inlier_rmse_ = std::sqrt(error2 / (double)corres_number);
-    }
-    return result;
-}
-
 static RegistrationResult GetRegistrationResultAndCorrespondencesTransformedSource(
         const geometry::PointCloud &source,
         const geometry::PointCloud &target,
         const geometry::KDTreeFlann &target_kdtree,
         double max_correspondence_distance,
-        const Eigen::Matrix4d &transformation) {
+        const Eigen::Matrix4d &transformation,
+        bool with_correspondence_set = true) {
     RegistrationResult result(transformation);
     if (max_correspondence_distance <= 0.0) {
         return result;
@@ -90,9 +37,11 @@ static RegistrationResult GetRegistrationResultAndCorrespondencesTransformedSour
     const Eigen::Vector3d t = transformation.block<3, 1>(0, 3);
 
     double error2 = 0.0;
+    size_t correspondence_count = 0;
 #pragma omp parallel
     {
         double error2_private = 0.0;
+        int inlier_count_private = 0;
         CorrespondenceSet correspondence_set_private;
         std::vector<int> indices;
         std::vector<double> dists;
@@ -104,30 +53,192 @@ static RegistrationResult GetRegistrationResultAndCorrespondencesTransformedSour
             if (target_kdtree.SearchHybrid(point, max_correspondence_distance,
                                            1, indices, dists) > 0) {
                 error2_private += dists[0];
-                correspondence_set_private.emplace_back(i, indices[0]);
+                inlier_count_private++;
+                if (with_correspondence_set) {
+                    correspondence_set_private.emplace_back(i, indices[0]);
+                }
             }
         }
 #pragma omp critical(GetRegistrationResultAndCorrespondencesTransformedSource)
         {
-            result.correspondence_set_.insert(result.correspondence_set_.end(),
-                                              correspondence_set_private.begin(),
-                                              correspondence_set_private.end());
+            if (with_correspondence_set) {
+                result.correspondence_set_.insert(
+                        result.correspondence_set_.end(),
+                        correspondence_set_private.begin(),
+                        correspondence_set_private.end());
+            }
+            correspondence_count += static_cast<size_t>(inlier_count_private);
             error2 += error2_private;
         }
     }
 
-    if (result.correspondence_set_.empty()) {
+    if (correspondence_count == 0) {
         result.fitness_ = 0.0;
         result.inlier_rmse_ = 0.0;
     } else {
-        const size_t corres_number = result.correspondence_set_.size();
         result.fitness_ = source.points_.empty()
                                   ? 0.0
-                                  : (double)corres_number /
-                                            (double)source.points_.size();
-        result.inlier_rmse_ = std::sqrt(error2 / (double)corres_number);
+                                  : static_cast<double>(correspondence_count) /
+                                            static_cast<double>(source.points_.size());
+        result.inlier_rmse_ =
+                std::sqrt(error2 / static_cast<double>(correspondence_count));
     }
     return result;
+}
+
+static Eigen::Matrix4d ComputeTransformationPointToPointTransformedSource(
+        const geometry::PointCloud &source,
+        const geometry::PointCloud &target,
+        const CorrespondenceSet &corres,
+        const Eigen::Matrix4d &transformation,
+        bool with_scaling) {
+    if (corres.empty()) {
+        return Eigen::Matrix4d::Identity();
+    }
+
+    const Eigen::Matrix3d linear = transformation.block<3, 3>(0, 0);
+    const Eigen::Vector3d t = transformation.block<3, 1>(0, 3);
+    const double inv_n = 1.0 / static_cast<double>(corres.size());
+
+    Eigen::Vector3d mean_s = Eigen::Vector3d::Zero();
+    Eigen::Vector3d mean_t = Eigen::Vector3d::Zero();
+#pragma omp parallel
+    {
+        Eigen::Vector3d mean_s_private = Eigen::Vector3d::Zero();
+        Eigen::Vector3d mean_t_private = Eigen::Vector3d::Zero();
+#pragma omp for nowait
+        for (int i = 0; i < static_cast<int>(corres.size()); ++i) {
+            mean_s_private += linear * source.points_[corres[i][0]] + t;
+            mean_t_private += target.points_[corres[i][1]];
+        }
+#pragma omp critical(ComputeTransformationPointToPointTransformedSourceMean)
+        {
+            mean_s += mean_s_private;
+            mean_t += mean_t_private;
+        }
+    }
+    mean_s *= inv_n;
+    mean_t *= inv_n;
+
+    Eigen::Matrix3d cov = Eigen::Matrix3d::Zero();
+    double var_s = 0.0;
+#pragma omp parallel
+    {
+        Eigen::Matrix3d cov_private = Eigen::Matrix3d::Zero();
+        double var_s_private = 0.0;
+#pragma omp for nowait
+        for (int i = 0; i < static_cast<int>(corres.size()); ++i) {
+            const Eigen::Vector3d ds =
+                    linear * source.points_[corres[i][0]] + t - mean_s;
+            const Eigen::Vector3d dt = target.points_[corres[i][1]] - mean_t;
+            cov_private.noalias() += dt * ds.transpose();
+            var_s_private += ds.squaredNorm();
+        }
+#pragma omp critical(ComputeTransformationPointToPointTransformedSourceCov)
+        {
+            cov += cov_private;
+            var_s += var_s_private;
+        }
+    }
+    cov *= inv_n;
+    var_s *= inv_n;
+
+    const Eigen::JacobiSVD<Eigen::Matrix3d> svd(
+            cov, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    const Eigen::Matrix3d U = svd.matrixU();
+    const Eigen::Matrix3d V = svd.matrixV();
+    if (!U.allFinite() || !V.allFinite()) {
+        utility::LogDebug(
+                "PointToPoint SVD failed, falling back to identity update.");
+        return Eigen::Matrix4d::Identity();
+    }
+
+    Eigen::Vector3d diag = Eigen::Vector3d::Ones();
+    if ((U * V.transpose()).determinant() < 0.0) {
+        diag(2) = -1.0;
+    }
+    const Eigen::Matrix3d R = U * diag.asDiagonal() * V.transpose();
+
+    double scale = 1.0;
+    if (with_scaling && var_s > 0.0) {
+        const Eigen::Vector3d sigma = svd.singularValues();
+        scale = sigma.dot(diag) / var_s;
+    }
+
+    Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
+    T.block<3, 3>(0, 0) = scale * R;
+    T.block<3, 1>(0, 3) = mean_t - scale * R * mean_s;
+    return T;
+}
+
+static Eigen::Matrix4d ComputeTransformationPointToPlaneTransformedSource(
+        const geometry::PointCloud &source,
+        const geometry::PointCloud &target,
+        const CorrespondenceSet &corres,
+        const Eigen::Matrix4d &transformation) {
+    if (corres.empty() || !target.HasNormals()) {
+        return Eigen::Matrix4d::Identity();
+    }
+
+    const Eigen::Matrix3d linear = transformation.block<3, 3>(0, 0);
+    const Eigen::Vector3d t = transformation.block<3, 1>(0, 3);
+    Eigen::Matrix6d JTJ = Eigen::Matrix6d::Zero();
+    Eigen::Vector6d JTr = Eigen::Vector6d::Zero();
+
+#pragma omp parallel
+    {
+        Eigen::Matrix6d JTJ_private = Eigen::Matrix6d::Zero();
+        Eigen::Vector6d JTr_private = Eigen::Vector6d::Zero();
+        Eigen::Vector6d J_r = Eigen::Vector6d::Zero();
+#pragma omp for nowait
+        for (int i = 0; i < static_cast<int>(corres.size()); ++i) {
+            const Eigen::Vector3d vs =
+                    linear * source.points_[corres[i][0]] + t;
+            const Eigen::Vector3d &vt = target.points_[corres[i][1]];
+            const Eigen::Vector3d &nt = target.normals_[corres[i][1]];
+            const double r = (vs - vt).dot(nt);
+            J_r.block<3, 1>(0, 0) = vs.cross(nt);
+            J_r.block<3, 1>(3, 0) = nt;
+            JTJ_private.noalias() += J_r * J_r.transpose();
+            JTr_private.noalias() += J_r * r;
+        }
+#pragma omp critical(ComputeTransformationPointToPlaneTransformedSource)
+        {
+            JTJ += JTJ_private;
+            JTr += JTr_private;
+        }
+    }
+
+    bool is_success;
+    Eigen::Matrix4d extrinsic;
+    std::tie(is_success, extrinsic) =
+            utility::SolveJacobianSystemAndObtainExtrinsicMatrix(JTJ, JTr);
+    return is_success ? extrinsic : Eigen::Matrix4d::Identity();
+}
+
+static Eigen::Matrix4d ComputeTransformationTransformedSource(
+        const geometry::PointCloud &source,
+        const geometry::PointCloud &target,
+        const CorrespondenceSet &corres,
+        const Eigen::Matrix4d &transformation,
+        const TransformationEstimation &estimation) {
+    if (const auto *point_to_point =
+                dynamic_cast<const TransformationEstimationPointToPoint *>(
+                        &estimation)) {
+        return ComputeTransformationPointToPointTransformedSource(
+                source, target, corres, transformation,
+                point_to_point->with_scaling_);
+    }
+    if (dynamic_cast<const TransformationEstimationPointToPlane *>(&estimation)) {
+        return ComputeTransformationPointToPlaneTransformedSource(
+                source, target, corres, transformation);
+    }
+
+    geometry::PointCloud transformed_source(source);
+    if (!transformation.isIdentity()) {
+        transformed_source.Transform(transformation);
+    }
+    return estimation.ComputeTransformation(transformed_source, target, corres);
 }
 
 static RegistrationResult GetRegistrationResultTransformedSourceSampled(
@@ -263,20 +374,16 @@ RegistrationResult RegistrationICP(
     geometry::KDTreeFlann kdtree;
     const geometry::PointCloud &target_initialized = *target_initialized_c;
     kdtree.SetGeometry(target_initialized);
-    geometry::PointCloud pcd(*source_initialized_c);
-
-    if (!init.isIdentity()) {
-        pcd.Transform(init);
-    }
     RegistrationResult result;
-    result = GetRegistrationResultAndCorrespondences(
-            pcd, target_initialized, kdtree, max_correspondence_distance,
-            transformation);
+    result = GetRegistrationResultAndCorrespondencesTransformedSource(
+            *source_initialized_c, target_initialized, kdtree,
+            max_correspondence_distance, transformation);
     for (int i = 0; i < criteria.max_iteration_; i++) {
         utility::LogDebug("ICP Iteration #{:d}: Fitness {:.4f}, RMSE {:.4f}", i,
                           result.fitness_, result.inlier_rmse_);
-        Eigen::Matrix4d update = estimation.ComputeTransformation(
-                pcd, target_initialized, result.correspondence_set_);
+        const Eigen::Matrix4d update = ComputeTransformationTransformedSource(
+                *source_initialized_c, target_initialized,
+                result.correspondence_set_, transformation, estimation);
         if (!update.allFinite()) {
             utility::LogWarning(
                     "RegistrationICP encountered non-finite update at iteration {}.",
@@ -284,11 +391,10 @@ RegistrationResult RegistrationICP(
             break;
         }
         transformation = update * transformation;
-        pcd.Transform(update);
         RegistrationResult backup = result;
-        result = GetRegistrationResultAndCorrespondences(
-                pcd, target_initialized, kdtree, max_correspondence_distance,
-                transformation);
+        result = GetRegistrationResultAndCorrespondencesTransformedSource(
+                *source_initialized_c, target_initialized, kdtree,
+                max_correspondence_distance, transformation);
         if (std::abs(backup.fitness_ - result.fitness_) <
                     criteria.relative_fitness_ &&
             std::abs(backup.inlier_rmse_ - result.inlier_rmse_) <
@@ -395,7 +501,16 @@ RegistrationResult RegistrationRANSACBasedOnCorrespondence(
                 auto result =
                         GetRegistrationResultAndCorrespondencesTransformedSource(
                                 source, target, kdtree,
-                                max_correspondence_distance, transformation);
+                                max_correspondence_distance, transformation,
+                                false);
+
+                if (result.IsBetterRANSACThan(best_result_local)) {
+                    result = GetRegistrationResultAndCorrespondencesTransformedSource(
+                            source, target, kdtree,
+                            max_correspondence_distance, transformation, true);
+                } else {
+                    continue;
+                }
 
                 if (result.IsBetterRANSACThan(best_result_local)) {
                     best_result_local = result;

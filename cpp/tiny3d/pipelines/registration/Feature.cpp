@@ -22,6 +22,35 @@ namespace tiny3d {
 namespace pipelines {
 namespace registration {
 
+namespace {
+
+using NeighborIndices = std::vector<std::vector<int>>;
+using NeighborDistances = std::vector<std::vector<double>>;
+
+void ComputeNeighborhoods(const geometry::PointCloud &input,
+                          const geometry::KDTreeFlann &kdtree,
+                          const geometry::KDTreeSearchParam &search_param,
+                          NeighborIndices &neighbor_indices,
+                          NeighborDistances &neighbor_distance2) {
+    const size_t n_points = input.points_.size();
+    neighbor_indices.resize(n_points);
+    neighbor_distance2.resize(n_points);
+
+#pragma omp parallel num_threads(utility::EstimateMaxThreads())
+    {
+        std::vector<int> indices;
+        std::vector<double> distance2;
+#pragma omp for schedule(static)
+        for (int i = 0; i < static_cast<int>(n_points); ++i) {
+            kdtree.Search(input.points_[i], search_param, indices, distance2);
+            neighbor_indices[i] = indices;
+            neighbor_distance2[i] = distance2;
+        }
+    }
+}
+
+}  // namespace
+
 std::shared_ptr<Feature> Feature::SelectByIndex(
         const std::vector<size_t> &indices, bool invert /* = false */) const {
     auto output = std::make_shared<Feature>();
@@ -74,9 +103,11 @@ static Eigen::Vector4d ComputePairFeatures(const Eigen::Vector3d &p1,
     }
     auto n1_copy = n1;
     auto n2_copy = n2;
-    double angle1 = n1_copy.dot(dp2p1) / result(3);
-    double angle2 = n2_copy.dot(dp2p1) / result(3);
-    if (acos(fabs(angle1)) > acos(fabs(angle2))) {
+    const double angle1 =
+            std::clamp(n1_copy.dot(dp2p1) / result(3), -1.0, 1.0);
+    const double angle2 =
+            std::clamp(n2_copy.dot(dp2p1) / result(3), -1.0, 1.0);
+    if (std::abs(angle1) < std::abs(angle2)) {
         n1_copy = n2;
         n2_copy = n1;
         dp2p1 *= -1.0;
@@ -98,8 +129,7 @@ static Eigen::Vector4d ComputePairFeatures(const Eigen::Vector3d &p1,
 
 static std::shared_ptr<Feature> ComputeSPFHFeature(
         const geometry::PointCloud &input,
-        const geometry::KDTreeFlann &kdtree,
-        const geometry::KDTreeSearchParam &search_param) {
+        const NeighborIndices &neighbor_indices) {
     const size_t n_spfh = input.points_.size();
     auto feature = std::make_shared<Feature>();
     feature->Resize(33, static_cast<int>(n_spfh));
@@ -108,9 +138,8 @@ static std::shared_ptr<Feature> ComputeSPFHFeature(
     for (int i = 0; i < static_cast<int>(n_spfh); i++) {
         const auto &point = input.points_[i];
         const auto &normal = input.normals_[i];
-        std::vector<int> indices;
-        std::vector<double> distance2;
-        if (kdtree.Search(point, search_param, indices, distance2) > 1) {
+        const auto &indices = neighbor_indices[i];
+        if (indices.size() > 1) {
             double hist_incr = 100.0 / static_cast<double>(indices.size() - 1);
             for (size_t k = 1; k < indices.size(); k++) {
                 auto pf = ComputePairFeatures(point, normal,
@@ -142,21 +171,23 @@ std::shared_ptr<Feature> ComputeFPFHFeature(
 
     const size_t n_points = input.points_.size();
     geometry::KDTreeFlann kdtree(input);
+    NeighborIndices neighbor_indices;
+    NeighborDistances neighbor_distance2;
+    ComputeNeighborhoods(input, kdtree, search_param, neighbor_indices,
+                         neighbor_distance2);
 
     auto feature = std::make_shared<Feature>();
     feature->Resize(33, static_cast<int>(n_points));
 
-    auto spfh = ComputeSPFHFeature(input, kdtree, search_param);
+    auto spfh = ComputeSPFHFeature(input, neighbor_indices);
     if (spfh == nullptr) {
         utility::LogError("Internal error: SPFH feature is nullptr.");
     }
 
 #pragma omp parallel for schedule(static) num_threads(utility::EstimateMaxThreads())
     for (int i = 0; i < static_cast<int>(n_points); i++) {
-        int i_spfh = i;
-        std::vector<int> indices;
-        std::vector<double> distance2;
-        kdtree.Search(input.points_[i], search_param, indices, distance2);
+        const auto &indices = neighbor_indices[i];
+        const auto &distance2 = neighbor_distance2[i];
 
         if (indices.size() > 1) {
             double sum[3] = {0.0, 0.0, 0.0};
@@ -175,7 +206,7 @@ std::shared_ptr<Feature> ComputeFPFHFeature(
             }
             for (int j = 0; j < 33; j++) {
                 feature->data_(j, i) *= sum[j / 11];
-                feature->data_(j, i) += spfh->data_(j, i_spfh);
+                feature->data_(j, i) += spfh->data_(j, i);
             }
         }
     }
@@ -220,8 +251,10 @@ CorrespondenceSet CorrespondencesFromFeatures(const Feature &source_features,
             dist_tmp.reserve(1);
 #pragma omp for schedule(static)
             for (int i = 0; i < num_pts_k; i++) {
-                const Eigen::VectorXd query(features[k].get().data_.col(i));
-                const int nn = kdtree.SearchKNN(query, 1, corres_tmp, dist_tmp);
+                const auto &feature = features[k].get();
+                const int nn = kdtree.SearchKNN(feature.data_.col(i).data(),
+                                               feature.data_.rows(), 1,
+                                               corres_tmp, dist_tmp);
                 if (nn > 0) {
                     int j = corres_tmp[0];
                     corres[k][i] = Eigen::Vector2i(i, j);
