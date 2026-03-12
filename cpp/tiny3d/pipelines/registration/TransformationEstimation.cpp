@@ -34,13 +34,54 @@ Eigen::Matrix4d TransformationEstimationPointToPoint::ComputeTransformation(
         const geometry::PointCloud &target,
         const CorrespondenceSet &corres) const {
     if (corres.empty()) return Eigen::Matrix4d::Identity();
-    Eigen::MatrixXd source_mat(3, corres.size());
-    Eigen::MatrixXd target_mat(3, corres.size());
-    for (size_t i = 0; i < corres.size(); i++) {
-        source_mat.block<3, 1>(0, i) = source.points_[corres[i][0]];
-        target_mat.block<3, 1>(0, i) = target.points_[corres[i][1]];
+
+    const double inv_n = 1.0 / static_cast<double>(corres.size());
+    Eigen::Vector3d mean_s = Eigen::Vector3d::Zero();
+    Eigen::Vector3d mean_t = Eigen::Vector3d::Zero();
+    for (const auto &c : corres) {
+        mean_s += source.points_[c[0]];
+        mean_t += target.points_[c[1]];
     }
-    return Eigen::umeyama(source_mat, target_mat, with_scaling_);
+    mean_s *= inv_n;
+    mean_t *= inv_n;
+
+    Eigen::Matrix3d cov = Eigen::Matrix3d::Zero();
+    double var_s = 0.0;
+    for (const auto &c : corres) {
+        const Eigen::Vector3d ds = source.points_[c[0]] - mean_s;
+        const Eigen::Vector3d dt = target.points_[c[1]] - mean_t;
+        cov.noalias() += dt * ds.transpose();
+        var_s += ds.squaredNorm();
+    }
+    cov *= inv_n;
+    var_s *= inv_n;
+
+    const Eigen::JacobiSVD<Eigen::Matrix3d> svd(
+            cov, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    const Eigen::Matrix3d U = svd.matrixU();
+    const Eigen::Matrix3d V = svd.matrixV();
+    if (!U.allFinite() || !V.allFinite()) {
+        utility::LogDebug(
+                "PointToPoint SVD failed, falling back to identity update.");
+        return Eigen::Matrix4d::Identity();
+    }
+
+    Eigen::Vector3d diag = Eigen::Vector3d::Ones();
+    if ((U * V.transpose()).determinant() < 0.0) {
+        diag(2) = -1.0;
+    }
+    const Eigen::Matrix3d R = U * diag.asDiagonal() * V.transpose();
+
+    double scale = 1.0;
+    if (with_scaling_ && var_s > 0.0) {
+        const Eigen::Vector3d sigma = svd.singularValues();
+        scale = sigma.dot(diag) / var_s;
+    }
+
+    Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
+    T.block<3, 3>(0, 0) = scale * R;
+    T.block<3, 1>(0, 3) = mean_t - scale * R * mean_s;
+    return T;
 }
 
 std::tuple<std::shared_ptr<const geometry::PointCloud>,

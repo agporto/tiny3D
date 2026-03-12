@@ -93,11 +93,57 @@ int KDTreeFlann::SearchKNN(const T &query,
     if (data_.size() == 0 || query.rows() != data_.rows() || knn < 0) {
         return -1;
     }
+    if (knn == 1) {
+        Eigen::Index index_eigen = -1;
+        indices.resize(1);
+        distance2.resize(1);
+        const int k = nanoflann_index_->index_->knnSearch(
+                query.data(), 1, &index_eigen, distance2.data());
+        indices.resize(k);
+        distance2.resize(k);
+        if (k > 0) {
+            indices[0] = static_cast<int>(index_eigen);
+        }
+        return k;
+    }
     indices.resize(knn);
     distance2.resize(knn);
     std::vector<Eigen::Index> indices_eigen(knn);
     int k = nanoflann_index_->index_->knnSearch(
             query.data(), knn, indices_eigen.data(), distance2.data());
+    indices.resize(k);
+    distance2.resize(k);
+    std::copy_n(indices_eigen.begin(), k, indices.begin());
+    return k;
+}
+
+int KDTreeFlann::SearchKNN(const double *query_data,
+                           int query_size,
+                           int knn,
+                           std::vector<int> &indices,
+                           std::vector<double> &distance2) const {
+    if (data_.size() == 0 || query_size != data_.rows() || knn < 0) {
+        return -1;
+    }
+    if (knn == 1) {
+        Eigen::Index index_eigen = -1;
+        indices.resize(1);
+        distance2.resize(1);
+        const int k = nanoflann_index_->index_->knnSearch(query_data, 1,
+                                                          &index_eigen,
+                                                          distance2.data());
+        indices.resize(k);
+        distance2.resize(k);
+        if (k > 0) {
+            indices[0] = static_cast<int>(index_eigen);
+        }
+        return k;
+    }
+    indices.resize(knn);
+    distance2.resize(knn);
+    std::vector<Eigen::Index> indices_eigen(knn);
+    const int k = nanoflann_index_->index_->knnSearch(
+            query_data, knn, indices_eigen.data(), distance2.data());
     indices.resize(k);
     distance2.resize(k);
     std::copy_n(indices_eigen.begin(), k, indices.begin());
@@ -141,6 +187,20 @@ int KDTreeFlann::SearchHybrid(const T &query,
     // to memory allocation/deallocation.
     if (data_.size() == 0 || query.rows() != data_.rows() || max_nn < 0) {
         return -1;
+    }
+    if (max_nn == 1) {
+        Eigen::Index index_eigen = -1;
+        indices.resize(1);
+        distance2.resize(1);
+        int k = nanoflann_index_->index_->knnSearch(
+                query.data(), 1, &index_eigen, distance2.data());
+        if (k > 0 && distance2[0] < radius * radius) {
+            indices[0] = static_cast<int>(index_eigen);
+            return 1;
+        }
+        indices.clear();
+        distance2.clear();
+        return 0;
     }
     distance2.resize(max_nn);
     std::vector<Eigen::Index> indices_eigen(max_nn);
