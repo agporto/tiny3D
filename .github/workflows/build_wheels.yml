@@ -1,11 +1,13 @@
 # Build cross-platform wheels for Windows, macOS, and Linux using cibuildwheel.
 # Handles manylinux compatibility and cross-compilation automatically.
+# Publishes to PyPI only on tagged releases (e.g. v1.0.0).
 
 name: Build tiny3D Wheels (cross-platform)
 
 on:
   push:
     branches: [ main ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
@@ -94,11 +96,21 @@ jobs:
           name: wheels-${{ matrix.os }}
           path: wheelhouse/*.whl
 
-# To publish to PyPI, uncomment and configure the following step:
-#      - name: Publish to PyPI
-#        uses: pypa/gh-action-pypi-publish@v1
-#        with:
-#          user: __token__
-#          password: ${{ secrets.PYPI_API_TOKEN }}
+  publish:
+    name: Publish to PyPI
+    needs: build_wheels
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all wheels
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          path: dist
+          merge-multiple: true
 
-
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
