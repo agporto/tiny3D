@@ -283,8 +283,15 @@ CorrespondenceSet CorrespondencesFromFeatures(const Feature &source_features,
     int num_src_pts = num_pts[0];
     for (int i = 0; i < num_src_pts; ++i) {
         int j = corres[0][i](1);  // Get the target index from the first correspondence set
+        // A correspondence (i -> j) is mutual iff the reverse search maps j
+        // back to i. corres[1][j] is stored as (query_index, match_index) ==
+        // (j, nn_of_j_in_source), so the source index to compare against i is
+        // element (1). Element (0) is always j itself, which made the old
+        // check equivalent to `j == i` — it kept almost nothing, and the
+        // mutual_consistent_ratio fallback then silently returned the
+        // unfiltered correspondences, making mutual_filter=True a no-op.
         if (j >= 0 && j < num_pts[1] &&
-            corres[1][j](0) == i) {  // Check if the correspondence is mutual
+            corres[1][j](1) == i) {  // Check if the correspondence is mutual
             corres_mutual.emplace_back(i, j);
         }
     }

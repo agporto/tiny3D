@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: MIT
 // ----------------------------------------------------------------------------
 
-// Adapted from <pybind11/stl/filesystem.h> to support C++14.
+// Adapted from <pybind11/stl/filesystem.h>.
 // Original attribution:
 // Copyright (c) 2021 The Pybind Development Team.
 // All rights reserved. Use of this source code is governed by a
@@ -19,18 +19,10 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/pytypes.h>
 
+#include <filesystem>
 #include <string>
 
-#ifdef WIN32
-#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
-#endif
-#ifdef __APPLE__
-#include <filesystem>
-namespace fs = std::__fs::filesystem;
-#else
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#endif
+namespace fs = std::filesystem;
 
 namespace pybind11 {
 namespace detail {
